@@ -7,6 +7,9 @@ import os
 import requests
 import asyncio
 
+if not os.getenv("BOT_TOKEN") or not os.getenv("WEBHOOK_URL"):
+    raise ValueError("BOT_TOKEN and WEBHOOK_URL must be set in the environment variables.")
+
 from telebot.engine.admin import (
     bot_start, 
     add_admin,
@@ -169,10 +172,10 @@ async def main():
     global application
 
     # Initialize the bot application asynchronously
-    await init_application()
+    application = await init_application()
 
     # Register commands after initialization
-    await register_commands()
+    await register_commands(application)
 
     # Set the webhook
     set_webhook()
