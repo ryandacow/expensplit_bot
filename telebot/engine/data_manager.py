@@ -65,9 +65,9 @@ def add_participant(group_id, username):
 
         # Insert initial balance for the new participant
         cursor.execute("""
-        INSERT INTO balances (group_id, user_id, balance)
+        INSERT INTO balances (group_id, username, balance)
         VALUES (%s, %s, %s)
-        ON CONFLICT (group_id, user_id) DO NOTHING;  -- Avoid duplicates
+        ON CONFLICT (group_id, username) DO NOTHING;  -- Avoid duplicates
         """, (group_id, username, 0.00))
 
         # Commit changes
