@@ -62,6 +62,7 @@ from telebot.engine.currency import(
 #Initialise quart and application with my bot token.
 app = Quart(__name__)
 application = Application.builder().token(BOT_TOKEN).build()
+application.initialize()
 
 #Set up database for each unique group ID at the start of activation.
 setup_database()
