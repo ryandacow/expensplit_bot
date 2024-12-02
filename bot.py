@@ -1,5 +1,4 @@
-from flask import Flask, request
-from threading import Thread
+from quart import Quart, request
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, CallbackContext, ConversationHandler, filters, MessageHandler
 from telebot.credentials import BOT_TOKEN
@@ -60,8 +59,8 @@ from telebot.engine.currency import(
     convert_currency
 )
 
-#Initialise flask and application with my bot token.
-app = Flask(__name__)
+#Initialise quart and application with my bot token.
+app = Quart(__name__)
 application = Application.builder().token(BOT_TOKEN).build()
 
 #Set up database for each unique group ID at the start of activation.
@@ -136,11 +135,10 @@ application.add_handler(expense_conv_handler)
 async def webhook():
     """Handle incoming updates from Telegram."""
     if request.method == 'POST':
-        update = Update.de_json(request.get_json(force=True), application.bot)
-        await application.process_update(update)  # This should be awaited
+        update = Update.de_json(await request.get_json(), application.bot)
+        await application.process_update(update)
         return "OK", 200
     return "Bad Request", 400
-
 
 def set_webhook():
     """Set the Telegram bot webhook."""
@@ -154,8 +152,6 @@ def set_webhook():
     else:
         print(f"Failed to set webhook: {response.status_code} - {response.text}")
 
-
 if __name__ == "__main__":
     set_webhook()
-    # Directly run the Flask application without asyncio
     app.run(host="0.0.0.0", port=8443)
