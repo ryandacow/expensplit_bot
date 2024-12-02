@@ -2,8 +2,9 @@ from flask import Flask, request
 from threading import Thread
 from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, CallbackContext, ConversationHandler, filters, MessageHandler
-from telebot.credentials import bot_token
+from telebot.credentials import BOT_TOKEN
 from telebot.engine.database import setup_database
+import os
 import requests
 
 from telebot.engine.admin import (
@@ -60,7 +61,7 @@ from telebot.engine.currency import(
 
 #Initialise flask and application with my bot token.
 app = Flask(__name__)
-application = Application.builder().token(bot_token).build()
+application = Application.builder().token(BOT_TOKEN).build()
 
 #Set up database for each unique group ID at the start of activation.
 setup_database()
@@ -140,10 +141,10 @@ def webhook():
 
 def set_webhook():
     """Set the Telegram bot webhook."""
-    WEBHOOK_URL = 'https://random-string.ngrok.io/webhook'  # Replace with your ngrok URL
+    WEBHOOK_URL = os.environ.get("WEBHOOK_URL")  # This will come from Render’s environment variable
     
     response = requests.post(
-        f'https://api.telegram.org/bot{bot_token}/setWebhook',
+        f'https://api.telegram.org/bot{os.environ.get("BOT_TOKEN")}/setWebhook',
         json={"url": WEBHOOK_URL}
     )
     
@@ -154,5 +155,4 @@ def set_webhook():
 
 if __name__ == "__main__":
     set_webhook()
-    # Set up Flask app to run on port 8443
     app.run(host="0.0.0.0", port=8443)
