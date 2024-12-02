@@ -3,11 +3,7 @@ from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
 import psycopg2
 from psycopg2 import sql
 import os
-from supabase_py import create_client
 from telebot.credentials import SUPABASE_API_KEY, SUPABASE_DB_HOST, SUPABASE_DB_NAME, SUPABASE_DB_PASSWORD, SUPABASE_DB_USER, SUPABASE_URL
-
-# Assuming the connection details for Supabase
-supabase = create_client(SUPABASE_URL, SUPABASE_API_KEY)
 
 def connect_to_base():
     try:
