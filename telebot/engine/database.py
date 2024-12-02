@@ -40,7 +40,7 @@ def setup_database():
             id SERIAL PRIMARY KEY,
             group_id BIGINT REFERENCES groups(group_id),  -- Group the expense belongs to
             purpose TEXT,                                 -- Description of the expense
-            payer_id BIGINT,                              -- ID of the payer
+            payer_id TEXT,                              -- ID of the payer
             amount NUMERIC,                               -- Total amount of the expense
             currency TEXT,                                -- Currency of the expense
             created_at TIMESTAMP DEFAULT NOW()            -- Timestamp when expense was created
@@ -52,7 +52,7 @@ def setup_database():
         CREATE TABLE IF NOT EXISTS expense_beneficiaries (
             id SERIAL PRIMARY KEY,
             expense_id INTEGER REFERENCES expenses(id) ON DELETE CASCADE,  -- Link to the expense
-            beneficiary_id BIGINT,                                         -- User ID of the beneficiary
+            username TEXT,                                                 -- User ID of the beneficiary
             split_amount NUMERIC                                           -- Amount each beneficiary owes
         );
         """)
@@ -62,7 +62,7 @@ def setup_database():
         CREATE TABLE IF NOT EXISTS balances (
             id SERIAL PRIMARY KEY,
             group_id BIGINT REFERENCES groups(group_id),  -- Group the balance belongs to
-            username BIGINT,                               -- ID of the user
+            username TEXT,                               -- Username of member
             balance NUMERIC DEFAULT 0,                   -- User's balance (negative means owed)
             UNIQUE(group_id, username)                    -- Ensure unique balance per user per group
         );
@@ -94,7 +94,7 @@ def setup_database():
         CREATE TABLE IF NOT EXISTS admins (
             id SERIAL PRIMARY KEY,
             group_id BIGINT REFERENCES groups(group_id),  -- Group the admin belongs to
-            username BIGINT,    -- Username of the user (admin)
+            username TEXT,    -- Username of the user (admin)
             UNIQUE (group_id, username)  -- Ensure unique admins per group
         );
         """)
