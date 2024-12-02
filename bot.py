@@ -6,7 +6,7 @@ from telebot.engine.database import setup_database
 import os
 import requests
 import asyncio
-import httpx
+import httpx, logging
 
 from telebot.engine.admin import (
     bot_start, 
@@ -60,14 +60,26 @@ from telebot.engine.currency import(
     convert_currency
 )
 
-#Set up database for each unique group ID at the start of activation.
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Set up database for each unique group ID at the start of activation
 setup_database()
 application = None
 
-#Initialise quart and application with my bot token.
+# Initialize Quart app
+app = Quart(__name__)
+
+# Initialize Telegram Bot Application
 async def init_application():
     global application
+    if not BOT_TOKEN:
+        raise RuntimeError("BOT_TOKEN is not set. Please provide a valid bot token.")
+
     application = Application.builder().token(BOT_TOKEN).build()
+    await application.initialize()
 
     # Register commands
     application.add_handler(CommandHandler("start", bot_start))
@@ -131,46 +143,50 @@ async def init_application():
 
     application.add_handler(expense_conv_handler)
 
-app = Quart(__name__)
+    logger.info("Telegram Bot Application initialized successfully.")
 
 # Ensure the webhook is set correctly
 async def set_webhook():
     WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
+    if not WEBHOOK_URL:
+        raise RuntimeError("WEBHOOK_URL is not set. Please provide a valid webhook URL.")
+
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f'https://api.telegram.org/bot{os.environ.get("BOT_TOKEN")}/setWebhook',
-            json={"url": WEBHOOK_URL}
+            f'https://api.telegram.org/bot{BOT_TOKEN}/setWebhook',
+            json={"url": WEBHOOK_URL},
         )
         if response.status_code == 200:
-            print("Webhook set successfully.")
+            logger.info("Webhook set successfully.")
         else:
-            print(f"Failed to set webhook: {response.status_code} - {response.text}")
+            logger.error(f"Failed to set webhook: {response.status_code} - {response.text}")
 
 # Handle incoming webhook requests
 @app.route('/webhook', methods=['POST'])
 async def webhook():
     """Handle incoming updates from Telegram."""
-    if application is None:
-        return "Service Unavailable", 503  # Service is not ready yet
-    if request.method == 'POST':
-        try:
-            update = Update.de_json(await request.get_json(), application.bot)
-            await application.process_update(update)
-            return "OK", 200
-        except Exception as e:
-            print(f"Error processing update: {e}")
-            return "Internal Server Error", 500
-    return "Bad Request", 400
+    if application is None or not application.is_initialized:
+        logger.error("Application is not initialized. Unable to process the update.")
+        return "Service Unavailable", 503
+
+    try:
+        update = Update.de_json(await request.get_json(), application.bot)
+        await application.process_update(update)
+        return "OK", 200
+    except Exception as e:
+        logger.error(f"Error processing update: {e}")
+        return "Internal Server Error", 500
 
 # Asynchronous entry point for setting webhook and running the app
 async def main():
     await init_application()
-    if not application:
-        raise RuntimeError("Application failed to initialize.")
     await set_webhook()
     await app.run_task(host="0.0.0.0", port=8443)
 
 if __name__ == "__main__":
     import asyncio
-    # Run the async main function
-    asyncio.run(main())
+
+    try:
+        asyncio.run(main())
+    except Exception as e:
+        logger.critical(f"Critical error during application startup: {e}")
