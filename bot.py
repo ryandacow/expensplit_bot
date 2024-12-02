@@ -6,6 +6,7 @@ from telebot.credentials import BOT_TOKEN
 from telebot.engine.database import setup_database
 import os
 import requests
+import asyncio
 
 from telebot.engine.admin import (
     bot_start, 
@@ -153,6 +154,13 @@ def set_webhook():
     else:
         print(f"Failed to set webhook: {response.status_code} - {response.text}")
 
+def run_flask():
+    """Run Flask app."""
+    app.run(host="0.0.0.0", port=8443)
+
+
 if __name__ == "__main__":
     set_webhook()
-    app.run(host="0.0.0.0", port=8443)
+    # Use asyncio to run the Flask app and Telegram bot async processing together
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, run_flask)
