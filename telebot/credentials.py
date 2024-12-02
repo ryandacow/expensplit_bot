@@ -1,11 +1,18 @@
-bot_token = "7895915217:AAHOVZoHmU3sbld_NdvGeDjdrfzzSrpcLkE"
-bot_username = "expensplit_bot"
-URL = "heroku link"
+import os
+from dotenv import load_dotenv
 
-SUPABASE_DB_HOST = "aws-0-ap-southeast-1.pooler.supabase.com"
-SUPABASE_DB_NAME = "postgres"
-SUPABASE_DB_USER = "postgres.mwritkktiewtyhgvfnwu"
-SUPABASE_DB_PASSWORD = "Yuanqi@271222"
-SUPABASE_URL = "https://mwritkktiewtyhgvfnwu.supabase.co" 
-SUPABASE_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13cml0a2t0aWV3dHloZ3Zmbnd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMwMzY4OTksImV4cCI6MjA0ODYxMjg5OX0.NBhXaRKfNl0yZhm3Ktt_MApsESdh__GKyJfzfKpN6lI"
+# Load environment variables from the .env file
+load_dotenv()
 
+# Telegram Bot
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+BOT_USERNAME = os.environ.get("BOT_USERNAME")
+URL = os.environ.get("URL")
+
+# Supabase Configuration
+SUPABASE_DB_HOST = os.environ.get("SUPABASE_DB_HOST")
+SUPABASE_DB_NAME = os.environ.get("SUPABASE_DB_NAME")
+SUPABASE_DB_USER = os.environ.get("SUPABASE_DB_USER")
+SUPABASE_DB_PASSWORD = os.environ.get("SUPABASE_DB_PASSWORD")
+SUPABASE_URL = os.environ.get("SUPABASE_URL")
+SUPABASE_API_KEY = os.environ.get("SUPABASE_API_KEY")
