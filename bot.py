@@ -62,75 +62,75 @@ from telebot.engine.currency import(
 
 #Set up database for each unique group ID at the start of activation.
 setup_database()
+application = None
 
 #Initialise quart and application with my bot token.
-application = Application.builder().token(BOT_TOKEN).build()
-application.initialize()
+async def init_application():
+    application = Application.builder().token(BOT_TOKEN).build()
+
+    # Register commands
+    application.add_handler(CommandHandler("start", bot_start))
+
+    application.add_handler(CommandHandler("add_member", add_member))
+    application.add_handler(CommandHandler("remove_member", remove_member))
+    application.add_handler(CommandHandler("show_members", show_members))
+
+    application.add_handler(CommandHandler("undo", undo))
+
+    application.add_handler(CommandHandler("show_balance", show_balance))
+    application.add_handler(CommandHandler("show_expenses", show_expenses))
+
+    application.add_handler(CommandHandler("add_admin", add_admin))
+    application.add_handler(CommandHandler("remove_admin", remove_admin))
+    application.add_handler(CommandHandler("show_admins", show_admins))
+
+    application.add_handler(CommandHandler("show_currency", show_currency))
+    application.add_handler(CommandHandler("set_currency", set_currency))
+    application.add_handler(CommandHandler("valid_currencies", valid_currencies))
+    application.add_handler(CommandHandler("convert_currency", convert_currency))
+
+    #/settle_all command
+    settle_all_conv_handler = ConversationHandler(
+        entry_points=[CommandHandler("settle_all", settle_all_start)],
+        states={
+            SETTLE_CONFIRMATION: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, settle_all_confirm),  # Only plain text (not commands)
+            ],
+        },
+        fallbacks=[CommandHandler("cancel", settle_all_cancel)],
+    ) 
+
+    application.add_handler(settle_all_conv_handler)
+
+    #remove_all_members command
+    remove_all_conv_handler = ConversationHandler(
+        entry_points=[CommandHandler("remove_all_members", remove_all_start)],
+        states={
+            REMOVE_CONFIRMATION: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, remove_all_confirm),  # Only plain text (not commands)
+            ],
+        },
+        fallbacks=[CommandHandler("cancel", remove_all_cancel)],
+    )
+
+    application.add_handler(remove_all_conv_handler)
+
+    #add_expense command
+    expense_conv_handler = ConversationHandler(
+    entry_points=[CommandHandler('add_expense', add_expense)],
+    states={
+        PURPOSE: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_purpose)],
+        PAYER: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_payer)],
+        AMOUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_amount)],
+        BENEFICIARIES: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_beneficiaries)],
+        SPLIT: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_split)],
+    },
+    fallbacks=[CommandHandler('cancel', add_expense_cancel)],  # Optional: Implement cancel command
+    ) 
+
+    application.add_handler(expense_conv_handler)
+
 app = Quart(__name__)
-
-# Register commands
-application.add_handler(CommandHandler("start", bot_start))
-
-application.add_handler(CommandHandler("add_member", add_member))
-application.add_handler(CommandHandler("remove_member", remove_member))
-application.add_handler(CommandHandler("show_members", show_members))
-
-application.add_handler(CommandHandler("undo", undo))
-
-application.add_handler(CommandHandler("show_balance", show_balance))
-application.add_handler(CommandHandler("show_expenses", show_expenses))
-
-application.add_handler(CommandHandler("add_admin", add_admin))
-application.add_handler(CommandHandler("remove_admin", remove_admin))
-application.add_handler(CommandHandler("show_admins", show_admins))
-
-application.add_handler(CommandHandler("show_currency", show_currency))
-application.add_handler(CommandHandler("set_currency", set_currency))
-application.add_handler(CommandHandler("valid_currencies", valid_currencies))
-application.add_handler(CommandHandler("convert_currency", convert_currency))
-
-#/settle_all command
-settle_all_conv_handler = ConversationHandler(
-    entry_points=[CommandHandler("settle_all", settle_all_start)],
-    states={
-        SETTLE_CONFIRMATION: [
-            MessageHandler(filters.TEXT & ~filters.COMMAND, settle_all_confirm),  # Only plain text (not commands)
-        ],
-    },
-    fallbacks=[CommandHandler("cancel", settle_all_cancel)],
-) 
-
-application.add_handler(settle_all_conv_handler)
-
-#remove_all_members command
-remove_all_conv_handler = ConversationHandler(
-    entry_points=[CommandHandler("remove_all_members", remove_all_start)],
-    states={
-        REMOVE_CONFIRMATION: [
-            MessageHandler(filters.TEXT & ~filters.COMMAND, remove_all_confirm),  # Only plain text (not commands)
-        ],
-    },
-    fallbacks=[CommandHandler("cancel", remove_all_cancel)],
-)
-
-application.add_handler(remove_all_conv_handler)
-
-#add_expense command
-expense_conv_handler = ConversationHandler(
-entry_points=[CommandHandler('add_expense', add_expense)],
-states={
-    PURPOSE: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_purpose)],
-    PAYER: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_payer)],
-    AMOUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_amount)],
-    BENEFICIARIES: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_beneficiaries)],
-    SPLIT: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_split)],
-},
-fallbacks=[CommandHandler('cancel', add_expense_cancel)],  # Optional: Implement cancel command
-) 
-
-application.add_handler(expense_conv_handler)
-
-
 
 # Ensure the webhook is set correctly
 async def set_webhook():
@@ -161,6 +161,7 @@ async def webhook():
 
 # Asynchronous entry point for setting webhook and running the app
 async def main():
+    await init_application
     await set_webhook()
     await app.run_task(host="0.0.0.0", port=8443)
 
