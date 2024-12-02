@@ -153,6 +153,14 @@ async def set_webhook():
         else:
             print(f"Failed to set webhook: {response.status_code} - {response.text}")
 
+
+async def main():
+    # Set the webhook after initializing the application
+    await set_webhook()
+    # Run the Quart app for handling incoming requests
+    await app.run_task(host="0.0.0.0", port=8443)
+
 if __name__ == "__main__":
-    set_webhook()
-    app.run(host="0.0.0.0", port=8443)
+    import asyncio
+    # Run the main async function
+    asyncio.run(main())
