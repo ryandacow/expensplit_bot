@@ -131,13 +131,18 @@ fallbacks=[CommandHandler('cancel', add_expense_cancel)],  # Optional: Implement
 application.add_handler(expense_conv_handler)
 
 
+
 @app.route('/webhook', methods=['POST'])
-async def webhook():
+def webhook():
     """Handle incoming updates from Telegram."""
     if request.method == 'POST':
-        update = Update.de_json(request.get_json(force=True), application.bot)
-        await application.process_update(update)
-        return "OK", 200
+        try:
+            update = Update.de_json(request.get_json(force=True), application.bot)
+            application.process_update(update)
+            return "OK", 200
+        except Exception as e:
+            print(f"Error processing update: {e}")
+            return "Internal Server Error", 500
     return "Bad Request", 400
 
 
