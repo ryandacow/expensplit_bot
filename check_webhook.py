@@ -1,7 +1,5 @@
 import requests
-from telebot.credentials import bot_token
-
-BOT_TOKEN = bot_token  # Replace with your actual bot token
+from telebot.credentials import BOT_TOKEN  # Replace with your actual bot token
 
 def check_webhook():
     response = requests.get(f'https://api.telegram.org/bot{BOT_TOKEN}/getWebhookInfo')
