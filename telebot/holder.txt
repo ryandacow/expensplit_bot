@@ -1,0 +1,48 @@
+async def add_expense(update: Update, context: CallbackContext):
+    if len(context.args) < 3:
+        await update.message.reply_text("Usage: /add_expense <Purpose> <Payer> <Amount> [<Beneficiary 1>, <Beneficiary 2>, ...]")
+        return
+    
+    try:
+        amount_paid = float(context.args[2])
+        payer = context.args[1]
+        purpose = context.args[0]
+
+        if amount_paid <= 0:
+            await update.message.reply_text("Amount must be greater than 0.")
+            return
+    
+    except ValueError:
+        await update.message.reply_text("Invalid amount. Please enter a valid number.")
+        return
+    
+    if payer not in participants:
+        await update.message.reply_text(f"{payer} is not a member in the group. Use /add_member to add them in!")
+        return
+    
+    if len(context.args) > 3: #beneficiaries provided
+        beneficiaries = context.args[3].split(",")
+        beneficiaries = [b.strip() for b in beneficiaries if b.strip() in participants]
+
+    else:
+        beneficiaries = list(participants)
+
+    share_per_pax = amount_paid/len(beneficiaries)
+    for b in beneficiaries:
+        if b == payer:
+            balance[payer] += share_per_pax
+        else:
+            balance[payer] -= share_per_pax
+            balance[b] += share_per_pax
+
+    expenses.append({"purpose": purpose, "payer": payer, "amount": amount_paid, "beneficiaries": beneficiaries, "share per pax": share_per_pax})
+
+    beneficiaries_text = ", ".join(beneficiaries)
+    await update.message.reply_text(
+        f"Expense recorded!\n"
+        f"Purpose: {purpose}\n"
+        f"Amount: {amount_paid}\n"
+        f"Payer: {payer}\n"
+        f"Beneficiaries: {beneficiaries_text}\n"
+        f"Share per pax: {share_per_pax:.2f}"
+    )
