@@ -65,6 +65,7 @@ setup_database()
 
 #Initialise quart and application with my bot token.
 application = Application.builder().token(BOT_TOKEN).build()
+application.initialize()
 app = Quart(__name__)
 
 # Register commands
