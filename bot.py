@@ -140,27 +140,21 @@ async def webhook():
         return "OK", 200
     return "Bad Request", 400
 
+
 def set_webhook():
     """Set the Telegram bot webhook."""
     WEBHOOK_URL = os.environ.get("WEBHOOK_URL")  # This will come from Render’s environment variable
-    
     response = requests.post(
         f'https://api.telegram.org/bot{os.environ.get("BOT_TOKEN")}/setWebhook',
         json={"url": WEBHOOK_URL}
     )
-    
     if response.status_code == 200:
         print("Webhook set successfully.")
     else:
         print(f"Failed to set webhook: {response.status_code} - {response.text}")
 
-def run_flask():
-    """Run Flask app."""
-    app.run(host="0.0.0.0", port=8443)
-
 
 if __name__ == "__main__":
     set_webhook()
-    # Use asyncio to run the Flask app and Telegram bot async processing together
-    loop = asyncio.get_event_loop()
-    loop.run_in_executor(None, run_flask)
+    # Directly run the Flask application without asyncio
+    app.run(host="0.0.0.0", port=8443)
