@@ -75,11 +75,9 @@ app = Quart(__name__)
 # Initialize Telegram Bot Application
 async def init_application():
     global application
-    if not BOT_TOKEN:
-        raise RuntimeError("BOT_TOKEN is not set. Please provide a valid bot token.")
-
     application = Application.builder().token(BOT_TOKEN).build()
-    await application.initialize()
+    await application.initialize()  # This prepares the application asynchronously
+    logger.info("Telegram Bot Application initialized successfully.")
 
     # Register commands
     application.add_handler(CommandHandler("start", bot_start))
@@ -165,11 +163,12 @@ async def set_webhook():
 @app.route('/webhook', methods=['POST'])
 async def webhook():
     """Handle incoming updates from Telegram."""
-    if application is None or not application.is_initialized:
+    if application is None:
         logger.error("Application is not initialized. Unable to process the update.")
         return "Service Unavailable", 503
 
     try:
+        # Process the incoming update from Telegram
         update = Update.de_json(await request.get_json(), application.bot)
         await application.process_update(update)
         return "OK", 200
