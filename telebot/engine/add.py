@@ -68,7 +68,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
             return BENEFICIARIES
 
     context.user_data["beneficiaries"] = beneficiaries
-    await update.message.reply_text(f"Beneficiaries: {", ".join(beneficiaries)}\nBeneficiaries are valid. Please input the amounts each beneficiary will receive in the SAME order as shown.")
+    await update.message.reply_text(f"Beneficiaries: {', '.join(beneficiaries)}\nBeneficiaries are valid. Please input the amounts each beneficiary will receive in the SAME order as shown.")
     return SPLIT
 
 async def add_split(update: Update, context: CallbackContext):
