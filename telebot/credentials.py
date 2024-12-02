@@ -7,7 +7,6 @@ load_dotenv()
 # Telegram Bot
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 BOT_USERNAME = os.environ.get("BOT_USERNAME")
-URL = os.environ.get("URL")
 
 # Supabase Configuration
 SUPABASE_DB_HOST = os.environ.get("SUPABASE_DB_HOST")
