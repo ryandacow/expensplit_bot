@@ -60,13 +60,12 @@ from telebot.engine.currency import(
     convert_currency
 )
 
-#Initialise quart and application with my bot token.
-app = Quart(__name__)
-application = Application.builder().token(BOT_TOKEN).build()
-
 #Set up database for each unique group ID at the start of activation.
 setup_database()
 
+#Initialise quart and application with my bot token.
+application = Application.builder().token(BOT_TOKEN).build()
+app = Quart(__name__)
 
 # Register commands
 application.add_handler(CommandHandler("start", bot_start))
@@ -132,15 +131,7 @@ application.add_handler(expense_conv_handler)
 
 
 
-@app.route('/webhook', methods=['POST'])
-async def webhook():
-    """Handle incoming updates from Telegram."""
-    if request.method == 'POST':
-        update = Update.de_json(await request.get_json(), application.bot)
-        await application.process_update(update)
-        return "OK", 200
-    return "Bad Request", 400
-
+# Ensure the webhook is set correctly
 async def set_webhook():
     WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
     async with httpx.AsyncClient() as client:
@@ -153,14 +144,26 @@ async def set_webhook():
         else:
             print(f"Failed to set webhook: {response.status_code} - {response.text}")
 
+# Handle incoming webhook requests
+@app.route('/webhook', methods=['POST'])
+async def webhook():
+    """Handle incoming updates from Telegram."""
+    if request.method == 'POST':
+        try:
+            update = Update.de_json(await request.get_json(), application.bot)
+            await application.process_update(update)
+            return "OK", 200  # Successful response
+        except Exception as e:
+            print(f"Error processing update: {e}")
+            return "Internal Server Error", 500
+    return "Bad Request", 400
 
+# Asynchronous entry point for setting webhook and running the app
 async def main():
-    # Set the webhook after initializing the application
     await set_webhook()
-    # Run the Quart app for handling incoming requests
     await app.run_task(host="0.0.0.0", port=8443)
 
 if __name__ == "__main__":
     import asyncio
-    # Run the main async function
+    # Run the async main function
     asyncio.run(main())
