@@ -133,16 +133,12 @@ application.add_handler(expense_conv_handler)
 
 
 @app.route('/webhook', methods=['POST'])
-def webhook():
+async def webhook():
     """Handle incoming updates from Telegram."""
     if request.method == 'POST':
-        try:
-            update = Update.de_json(request.get_json(force=True), application.bot)
-            application.process_update(update)
-            return "OK", 200
-        except Exception as e:
-            print(f"Error processing update: {e}")
-            return "Internal Server Error", 500
+        update = Update.de_json(request.get_json(force=True), application.bot)
+        await application.process_update(update)  # This should be awaited
+        return "OK", 200
     return "Bad Request", 400
 
 

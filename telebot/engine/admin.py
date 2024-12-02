@@ -4,6 +4,7 @@ from telebot.engine.data_manager import connect_to_base, is_admin
 #expenses, balance, participants, admins, settlement_logs
 
 async def bot_start(update: Update, context: CallbackContext):
+    print("Bot started.")
     await update.message.reply_text("Hello! Welcome to ExpenSplit, a Bot for tracking expenses amongst a group of people!")
 
 async def add_admin(update: Update, context: CallbackContext):
