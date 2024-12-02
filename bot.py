@@ -161,7 +161,7 @@ async def webhook():
 
 # Asynchronous entry point for setting webhook and running the app
 async def main():
-    await init_application
+    await init_application()
     await set_webhook()
     await app.run_task(host="0.0.0.0", port=8443)
 
