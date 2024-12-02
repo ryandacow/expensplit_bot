@@ -66,6 +66,7 @@ application = None
 
 #Initialise quart and application with my bot token.
 async def init_application():
+    global application
     application = Application.builder().token(BOT_TOKEN).build()
 
     # Register commands
@@ -149,11 +150,13 @@ async def set_webhook():
 @app.route('/webhook', methods=['POST'])
 async def webhook():
     """Handle incoming updates from Telegram."""
+    if application is None:
+        return "Service Unavailable", 503  # Service is not ready yet
     if request.method == 'POST':
         try:
             update = Update.de_json(await request.get_json(), application.bot)
             await application.process_update(update)
-            return "OK", 200  # Successful response
+            return "OK", 200
         except Exception as e:
             print(f"Error processing update: {e}")
             return "Internal Server Error", 500
@@ -162,6 +165,8 @@ async def webhook():
 # Asynchronous entry point for setting webhook and running the app
 async def main():
     await init_application()
+    if not application:
+        raise RuntimeError("Application failed to initialize.")
     await set_webhook()
     await app.run_task(host="0.0.0.0", port=8443)
 
