@@ -131,11 +131,11 @@ application.add_handler(expense_conv_handler)
 
 
 @app.route('/webhook', methods=['POST'])
-def webhook():
+async def webhook():
     """Handle incoming updates from Telegram."""
     if request.method == 'POST':
         update = Update.de_json(request.get_json(force=True), application.bot)
-        application.process_update(update)
+        await application.process_update(update)
         return "OK", 200
     return "Bad Request", 400
 
