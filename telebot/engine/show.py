@@ -105,7 +105,7 @@ async def show_expenses(update: Update, context: CallbackContext):
                 f"   Payer: {expense[1]}\n"
                 f"   Amount Paid: {expense[3]}{expense[2]:.2f}\n"
                 f"   Beneficiaries: {beneficiaries_text}\n"
-                f"   Split Amounts: {split_amounts_text}"
+                f"   Split Amounts: {split_amounts_text}\n"
             )
 
         await update.message.reply_text(print_expenses, parse_mode="Markdown")
