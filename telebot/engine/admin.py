@@ -190,3 +190,84 @@ def remove_power(group_id, username):
     finally:
         if connection:
             connection.close()
+
+DELETE_ALL_CONFIRMATION = range(1)
+
+async def delete_all_start(update: Update, context: CallbackContext):
+    user = update.message.from_user.username
+    group_id = update.message.chat_id
+
+    if not is_admin(group_id, user):
+        await update.message.reply_text(f"{user} is not authorised to perform this action. Get an admin to authorise you first.")
+        return ConversationHandler.END
+    
+    await update.message.reply_text(
+        "Are you sure you want to delete all data? This cannot be undone.\n Reply with 'yes' or 'no'."
+    )
+
+    return DELETE_ALL_CONFIRMATION
+
+async def delete_all_confirm(update: Update, context: CallbackContext):
+    group_id = update.message.chat_id
+
+    if update.message.text.lower() == "yes":
+        try:
+            connection = connect_to_base()
+            cursor = connection.cursor()
+
+            # Begin a transaction
+            cursor.execute("BEGIN;")
+            
+            # Delete from expense_beneficiaries (expenses related to the group)
+            cursor.execute("""
+            DELETE FROM expense_beneficiaries WHERE expense_id IN 
+            (SELECT id FROM expenses WHERE group_id = %s);
+            """, (group_id,))
+            
+            # Delete from expenses (expenses related to the group)
+            cursor.execute("""
+            DELETE FROM expenses WHERE group_id = %s;
+            """, (group_id,))
+            
+            # Delete from participants (users related to the group)
+            cursor.execute("""
+            DELETE FROM participants WHERE group_id = %s;
+            """, (group_id,))
+            
+            # Delete from balances (balance records related to the group)
+            cursor.execute("""
+            DELETE FROM balances WHERE group_id = %s;
+            """, (group_id,))
+            
+            # Delete from admins (admins related to the group)
+            cursor.execute("""
+            DELETE FROM admins WHERE group_id = %s;
+            """, (group_id,))
+            
+            # Optionally, delete from the currency table if you want to reset the base currency
+            cursor.execute("""
+            DELETE FROM currency WHERE group_id = %s;
+            """, (group_id,))
+
+            # Commit the transaction
+            connection.commit()
+            
+            # Confirm the deletion to the user
+            await update.message.reply_text(f"All data for group {group_id} has been deleted and reset")
+            
+        except Exception as e:
+            await update.message.reply_text(f"Error while deleting group data: {e}")
+            connection.rollback()  # Rollback the transaction if an error occurs
+
+        finally:
+            cursor.close()
+            connection.close()
+
+    else:
+        await update.message.reply_text("The action to delete all data has been cancelled.")
+
+    return ConversationHandler.END
+
+async def delete_all_cancel(update: Update, context: CallbackContext):
+    await update.message.reply_text("The action to delete all data has been cancelled.")
+    return ConversationHandler.END
