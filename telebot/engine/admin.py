@@ -14,12 +14,12 @@ async def bot_start(update: Update, context: CallbackContext):
         cursor = connection.cursor()
 
         cursor.execute("""
-        SELECT 1 FROM admins WHERE group_id = %s;
+        SELECT 1 FROM groups WHERE group_id = %s;
         """, (group_id,))
 
         if cursor.fetchone() is None:
             cursor.execute("""
-            INSERT INTO admins (group_id)
+            INSERT INTO groups (group_id)
             VALUES (%s)
             ON CONFLICT(group_id) DO NOTHING;  -- Avoid duplicates
             """, (group_id,))
