@@ -29,7 +29,7 @@ def setup_database():
         # Create groups table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS groups (
-            group_id BIGINT PRIMARY KEY,
+            group_id BIGINT PRIMARY KEY
         );
         """)
 
@@ -111,14 +111,6 @@ def setup_database():
         connection.commit()
         print("Database setup completed successfully.")
 
-        # Ensure RyanDaCow is added as an admin for each group
-        cursor.execute("SELECT group_id FROM groups;")
-        groups = cursor.fetchall()
-
-        for group in groups:
-            group_id = group[0]
-            add_default_admin_for_group(group_id)  # Ensure admin is added for each group
-
     except psycopg2.Error as e:
         print(f"Error setting up database: {e}")
 
@@ -128,8 +120,3 @@ def setup_database():
             cursor.close()
         if connection:
             connection.close()
-
-
-def add_default_admin_for_group(group_id):
-    """Ensure 'RyanDaCow' is added as an admin for the group."""
-    
