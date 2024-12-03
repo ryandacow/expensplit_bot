@@ -116,3 +116,21 @@ async def show_expenses(update: Update, context: CallbackContext):
         if connection:
             cursor.close()
             connection.close()
+
+async def help(update: Update, context: CallbackContext): #convert to inline buttons eventually
+    await update.message.reply_text(
+        "*Below are a list of common commands and how to use them!*"
+        "/start: Initialises the Bot. Activate once before utilising the bot\n\n"
+        "/add_member <name>: Adds a member to be tracked\n"
+        "/show_members: Shows all members being tracked\n\n"
+        "/add_expense: Add an expense to be tracked\n"
+        "/undo: Undoes the latest expense added\n"
+        "/show_expenses: Shows expense log\n"
+        "/show_balance: Shows balances of all/individual participant(s)\n"
+        "/settle_all: Resets all balances after being settled\n\n"
+        "/set_currency: Sets the currency expenses are recorded down in\n"
+        "/convert_currency: Converts all expenses and balances to SGD\n"
+        "/valid_currencies: Shows all currencies that can be set\n\n"
+        "/cancel: Cancels ongoing command (/add_expense, /settle_all)",
+        parse_mode="Markdown"
+    )
