@@ -202,7 +202,7 @@ async def delete_all_start(update: Update, context: CallbackContext):
         return ConversationHandler.END
     
     await update.message.reply_text(
-        "Are you sure you want to delete all data? This cannot be undone.\n Reply with 'yes' or 'no'."
+        "Are you sure you want to delete all data? This cannot be undone.\nReply with 'yes' or 'no'."
     )
 
     return DELETE_ALL_CONFIRMATION
