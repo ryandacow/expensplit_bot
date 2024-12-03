@@ -119,7 +119,7 @@ async def show_expenses(update: Update, context: CallbackContext):
 
 async def help(update: Update, context: CallbackContext): #convert to inline buttons eventually
     await update.message.reply_text(
-        "Below are a list of common commands and how to use them!"
+        "Below are a list of common commands and how to use them!\n"
         "/start: Initialises the Bot. Activate once before utilising the bot\n\n"
         "/add_member <name>: Adds a member to be tracked\n"
         "/show_members: Shows all members being tracked\n\n"
@@ -131,5 +131,5 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
         "/set_currency: Sets the currency expenses are recorded down in\n"
         "/convert_currency: Converts all expenses and balances to SGD\n"
         "/valid_currencies: Shows all currencies that can be set\n\n"
-        "/cancel: Cancels ongoing command (/add_expense, /settle_all)"
+        "/cancel: Cancels ongoing command (add_expense, settle_all)"
     )
