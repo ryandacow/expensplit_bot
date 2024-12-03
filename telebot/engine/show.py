@@ -99,7 +99,7 @@ async def show_expenses(update: Update, context: CallbackContext):
         for i, expense in enumerate(expenses, start=1):
             beneficiaries = expense[4]  # JSON array of beneficiaries and amounts
             beneficiaries_text = ", ".join([f"{b['beneficiary']}" for b in beneficiaries])
-            split_amounts_text = ", ".join([f"{b['amount']:.2f}" for b in beneficiaries])
+            split_amounts_text = ", ".join([f"{expense[3]}{b['amount']:.2f}" for b in beneficiaries])
             print_expenses += (
                 f"*{i}.* Purpose: {expense[0]}\n"
                 f"   Payer: {expense[1]}\n"
