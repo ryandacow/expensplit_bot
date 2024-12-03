@@ -58,7 +58,7 @@ async def show_balance(update: Update, context: CallbackContext):
 
             balance = user_balance[0]
             status = "to be received" if balance < 0 else "to be paid" if balance > 0 else "settled"
-            balance_text = f"{currency}{abs(balance):.2f}"
+            balance_text = f"{currency}{abs(balance):.2f}" if balance >= 0 else f"{-currency}{abs(balance):.2f}"
             print_balance += f"{user_name}: {balance_text} ({status})\n"
 
         await update.message.reply_text(print_balance, parse_mode="Markdown")
