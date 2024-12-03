@@ -143,7 +143,7 @@ async def convert_currency(update: Update, context: CallbackContext):
         else:
             # Convert balances for all users in the group
             cursor.execute("""
-            SELECT username, balance FROM participants
+            SELECT participants.username, balances.balance
             JOIN balances ON participants.username = balances.username
             WHERE participants.group_id = %s;
             """, (group_id,))
