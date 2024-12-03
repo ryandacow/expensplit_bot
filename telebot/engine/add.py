@@ -51,7 +51,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         # Get all participants in the group
         cursor.execute("""
         SELECT username FROM participants WHERE group_id = %s;
-        """, (group_id))
+        """, (group_id,))
         beneficiaries = [row[0] for row in cursor.fetchall()]
         await update.message.reply_text("Amount will be split amongst all beneficiaries, including the payer.")
     

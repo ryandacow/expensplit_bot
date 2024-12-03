@@ -15,7 +15,7 @@ async def show_balance(update: Update, context: CallbackContext):
         # Fetch the base currency for the group
         cursor.execute("""
         SELECT base_currency FROM currency WHERE group_id = %s;
-        """, (group_id))
+        """, (group_id,))
         base_currency = cursor.fetchone()
         currency = base_currency[0] if base_currency else "SGD"
 
@@ -25,7 +25,7 @@ async def show_balance(update: Update, context: CallbackContext):
         FROM balances 
         JOIN participants ON balances.username = participants.username
         WHERE balances.group_id = %s;
-        """, (group_id))
+        """, (group_id,))
         balances = cursor.fetchall()
 
         if not balances:

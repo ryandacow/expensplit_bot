@@ -15,8 +15,8 @@ async def bot_start(update: Update, context: CallbackContext):
 
         cursor.execute("""
         SELECT 1 FROM admins WHERE group_id = %s;
-        """, (group_id))
-        
+        """, (group_id,))
+
         if cursor.fetchone() is None:
             cursor.execute("""
             INSERT INTO admins (group_id)
