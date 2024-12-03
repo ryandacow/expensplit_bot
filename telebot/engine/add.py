@@ -130,7 +130,7 @@ async def process_expense(update: Update, context: CallbackContext):
             UPDATE balances
             SET balance = balance - %s
             WHERE group_id = %s AND username = %s;
-            """, (amount_paid, group_id, payer))
+            """, (split_amount, group_id, payer))
 
             # Add to beneficiary
             cursor.execute("""
