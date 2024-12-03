@@ -48,9 +48,10 @@ async def remove_member(update: Update, context: CallbackContext):
         await update.message.reply_text(f"An error occurred while removing {old_member}: {str(e)}")
 
 async def remove_all_start(update: Update, context: CallbackContext):
+    group_id = update.message.chat_id
     user = update.message.from_user.username
 
-    if not is_admin(user):
+    if not is_admin(group_id, user):
         await update.message.reply_text(f"{user} is not authorised to perform this action. Get an admin to authorise you first.")
         return ConversationHandler.END
     
