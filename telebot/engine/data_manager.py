@@ -67,7 +67,7 @@ def add_group(group_id):
             INSERT INTO groups (group_id)
             VALUES (%s)
             ON CONFLICT(group_id) DO NOTHING;  -- Avoid duplicates
-            """, (group_id))
+            """, (group_id,))
 
         connection.commit()
         cursor.close()

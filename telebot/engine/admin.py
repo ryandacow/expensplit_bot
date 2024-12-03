@@ -22,7 +22,7 @@ async def bot_start(update: Update, context: CallbackContext):
             INSERT INTO admins (group_id)
             VALUES (%s)
             ON CONFLICT(group_id) DO NOTHING;  -- Avoid duplicates
-            """, (group_id))
+            """, (group_id,))
 
         # Check if 'RyanDaCow' is already an admin
         cursor.execute("""

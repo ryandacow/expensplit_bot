@@ -180,7 +180,7 @@ async def undo(update: Update, context: CallbackContext):
         GROUP BY e.id
         ORDER BY e.created_at DESC
         LIMIT 1;
-        """, (group_id))
+        """, (group_id,))
 
         last_expense = cursor.fetchone()
 
