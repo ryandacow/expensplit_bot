@@ -128,14 +128,14 @@ async def convert_currency(update: Update, context: CallbackContext):
 
             # Convert balance for this user
             cursor.execute("""
-            SELECT balance FROM balances WHERE group_id = %s AND user_id = (SELECT user_id FROM participants WHERE group_id = %s AND username = %s);
+            SELECT balance FROM balances WHERE group_id = %s AND username = (SELECT username FROM participants WHERE group_id = %s AND username = %s);
             """, (group_id, group_id, user))
             balance = cursor.fetchone()
 
             if balance:
                 updated_balance = balance[0] / rate
                 cursor.execute("""
-                UPDATE balances SET balance = %s WHERE group_id = %s AND user_id = (SELECT user_id FROM participants WHERE group_id = %s AND username = %s);
+                UPDATE balances SET balance = %s WHERE group_id = %s AND username = (SELECT username FROM participants WHERE group_id = %s AND username = %s);
                 """, (round(updated_balance, 2), group_id, group_id, user))
 
             await update.message.reply_text(f"{user}'s balance has been converted from {base_currency} to SGD.")
@@ -152,7 +152,7 @@ async def convert_currency(update: Update, context: CallbackContext):
             for username, balance in participants_balances:
                 updated_balance = balance / rate
                 cursor.execute("""
-                UPDATE balances SET balance = %s WHERE group_id = %s AND user_id = (SELECT user_id FROM participants WHERE group_id = %s AND username = %s);
+                UPDATE balances SET balance = %s WHERE group_id = %s AND username = (SELECT username FROM participants WHERE group_id = %s AND username = %s);
                 """, (round(updated_balance, 2), group_id, group_id, username))
 
             await update.message.reply_text(f"All balances have been converted from {base_currency} to SGD.")
