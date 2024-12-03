@@ -114,9 +114,10 @@ async def process_expense(update: Update, context: CallbackContext):
         RETURNING id, currency;
         """, (group_id, purpose, payer, amount_paid, group_id))
 
-        expense_id = cursor.fetchone()[0]
-        currency = cursor.fetchone()[1]
-        
+        expense_data = cursor.fetchone()
+        expense_id = expense_data[0]
+        currency = expense_data[1]
+
         # Insert beneficiaries and update balances
         for beneficiary, split_amount in zip(beneficiaries, split_amounts):
             cursor.execute("""
