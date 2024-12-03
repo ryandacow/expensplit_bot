@@ -15,7 +15,7 @@ async def show_balance(update: Update, context: CallbackContext):
         # Fetch the base currency for the group
         cursor.execute("""
         SELECT base_currency FROM currency WHERE group_id = %s;
-        """, (group_id,))
+        """, (group_id))
         base_currency = cursor.fetchone()
         currency = base_currency[0] if base_currency else "SGD"
 
@@ -23,9 +23,9 @@ async def show_balance(update: Update, context: CallbackContext):
         cursor.execute("""
         SELECT participants.username, balances.balance 
         FROM balances 
-        JOIN participants ON balances.user_id = participants.user_id 
+        JOIN participants ON balances.username = participants.username
         WHERE balances.group_id = %s;
-        """, (group_id,))
+        """, (group_id))
         balances = cursor.fetchall()
 
         if not balances:
@@ -47,7 +47,7 @@ async def show_balance(update: Update, context: CallbackContext):
             cursor.execute("""
             SELECT balances.balance 
             FROM balances 
-            JOIN participants ON balances.user_id = participants.user_id 
+            JOIN participants ON balances.username = participants.username
             WHERE participants.group_id = %s AND participants.username = %s;
             """, (group_id, user_name))
             user_balance = cursor.fetchone()
@@ -80,14 +80,12 @@ async def show_expenses(update: Update, context: CallbackContext):
 
         # Fetch expense history for the group
         cursor.execute("""
-        SELECT e.purpose, p.username AS payer, e.amount, e.currency, 
-               json_agg(json_build_object('beneficiary', b.username, 'amount', eb.split_amount)) AS beneficiaries 
+        SELECT e.purpose, e.payer, e.amount, e.currency, 
+               json_agg(json_build_object('beneficiary', eb.username, 'amount', eb.split_amount)) AS beneficiaries 
         FROM expenses e
-        JOIN participants p ON e.payer_id = p.user_id
         JOIN expense_beneficiaries eb ON e.id = eb.expense_id
-        JOIN participants b ON eb.beneficiary_id = b.user_id
         WHERE e.group_id = %s
-        GROUP BY e.id, p.username
+        GROUP BY e.id
         ORDER BY e.created_at DESC;
         """, (group_id,))
         expenses = cursor.fetchall()

@@ -30,7 +30,6 @@ def setup_database():
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS groups (
             group_id BIGINT PRIMARY KEY,
-            group_name TEXT
         );
         """)
 
@@ -40,7 +39,7 @@ def setup_database():
             id SERIAL PRIMARY KEY,
             group_id BIGINT REFERENCES groups(group_id),  -- Group the expense belongs to
             purpose TEXT,                                 -- Description of the expense
-            payer_id TEXT,                              -- ID of the payer
+            payer TEXT,                              -- Username of the payer
             amount NUMERIC,                               -- Total amount of the expense
             currency TEXT,                                -- Currency of the expense
             created_at TIMESTAMP DEFAULT NOW()            -- Timestamp when expense was created
@@ -133,30 +132,4 @@ def setup_database():
 
 def add_default_admin_for_group(group_id):
     """Ensure 'RyanDaCow' is added as an admin for the group."""
-    try:
-        connection = connect_to_base()
-        cursor = connection.cursor()
-
-        # Check if 'RyanDaCow' is already an admin
-        cursor.execute("""
-        SELECT 1 FROM admins WHERE group_id = %s AND username = %s;
-        """, (group_id, "RyanDaCow"))
-
-        # If 'RyanDaCow' is not an admin, insert them as an admin
-        if cursor.fetchone() is None:
-            cursor.execute("""
-            INSERT INTO admins (group_id, username)
-            VALUES (%s, %s)
-            ON CONFLICT(group_id, username) DO NOTHING;  -- Avoid duplicates
-            """, (group_id, "RyanDaCow"))
-
-            # Commit changes
-            connection.commit()
-            print(f"RyanDaCow added as admin for group {group_id}")
-
-        cursor.close()
-    except psycopg2.Error as e:
-        print(f"Error adding default admin: {e}")
-    finally:
-        if connection:
-            connection.close()
+    

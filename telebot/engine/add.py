@@ -51,9 +51,10 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         # Get all participants in the group
         cursor.execute("""
         SELECT username FROM participants WHERE group_id = %s;
-        """, (group_id,))
+        """, (group_id))
         beneficiaries = [row[0] for row in cursor.fetchall()]
         await update.message.reply_text("Amount will be split amongst all beneficiaries, including the payer.")
+    
     else:
         # Validate beneficiaries
         beneficiaries = [b.strip() for b in beneficiaries_text.split(",")]
@@ -99,8 +100,8 @@ async def process_expense(update: Update, context: CallbackContext):
     purpose = context.user_data["purpose"]
     payer = context.user_data["payer"]
     amount_paid = context.user_data["amount"]
-    beneficiaries = context.user_data["beneficiaries"]
-    split_amounts = context.user_data["split_amounts"]
+    beneficiaries = context.user_data["beneficiaries"] #list
+    split_amounts = context.user_data["split_amounts"] #list
 
     connection = connect_to_base()
     cursor = connection.cursor()
@@ -108,18 +109,20 @@ async def process_expense(update: Update, context: CallbackContext):
     try:
         # Insert expense into the 'expenses' table
         cursor.execute("""
-        INSERT INTO expenses (group_id, purpose, payer_id, amount, currency)
-        VALUES (%s, %s, (SELECT id FROM participants WHERE group_id = %s AND username = %s), %s, (SELECT base_currency FROM currency WHERE group_id = %s))
+        INSERT INTO expenses (group_id, purpose, payer, amount, currency)
+        VALUES (%s, %s, %s, %s, (SELECT base_currency FROM currency WHERE group_id = %s))
         RETURNING id;
-        """, (group_id, purpose, group_id, payer, amount_paid, group_id))
+        """, (group_id, purpose, payer, amount_paid, group_id))
+
         expense_id = cursor.fetchone()[0]
+        currency = cursor.fetchone()[4]
 
         # Insert beneficiaries and update balances
         for beneficiary, split_amount in zip(beneficiaries, split_amounts):
             cursor.execute("""
             INSERT INTO expense_beneficiaries (expense_id, beneficiary_id, split_amount)
-            VALUES (%s, (SELECT id FROM participants WHERE group_id = %s AND username = %s), %s);
-            """, (expense_id, group_id, beneficiary, split_amount))
+            VALUES (%s, %s, %s);
+            """, (expense_id, beneficiary, split_amount))
 
             # Deduct from payer
             cursor.execute("""
@@ -139,11 +142,11 @@ async def process_expense(update: Update, context: CallbackContext):
 
         # Provide confirmation
         beneficiaries_text = ", ".join(beneficiaries)
-        amounts_text = ", ".join([f"{split_amount:.2f}" for split_amount in split_amounts])
+        amounts_text = ", ".join([f"{currency}{split_amount:.2f}" for split_amount in split_amounts])
         await update.message.reply_text(
             f"Expense recorded!\n"
             f"Purpose: {purpose}\n"
-            f"Amount: {amount_paid:.2f}\n"
+            f"Amount: {currency}{amount_paid:.2f}\n"
             f"Payer: {payer}\n"
             f"Beneficiaries: {beneficiaries_text}\n"
             f"Split Amounts: {amounts_text}\n"
@@ -170,17 +173,15 @@ async def undo(update: Update, context: CallbackContext):
     try:
         # Fetch the last expense for the group
         cursor.execute("""
-        SELECT e.id, e.purpose, p.username AS payer, e.amount, e.currency, 
-               json_agg(json_build_object('beneficiary', b.username, 'amount', eb.split_amount)) AS beneficiaries
+        SELECT e.id, e.purpose, e.payer, e.amount, e.currency, json_agg(json_build_object('beneficiary', eb.username, 'amount', eb.split_amount)) AS beneficiaries
         FROM expenses e
-        JOIN participants p ON e.payer_id = p.id
         JOIN expense_beneficiaries eb ON e.id = eb.expense_id
-        JOIN participants b ON eb.beneficiary_id = b.id
         WHERE e.group_id = %s
-        GROUP BY e.id, p.username
+        GROUP BY e.id
         ORDER BY e.created_at DESC
         LIMIT 1;
-        """, (group_id,))
+        """, (group_id))
+
         last_expense = cursor.fetchone()
 
         if not last_expense:
@@ -212,6 +213,7 @@ async def undo(update: Update, context: CallbackContext):
         cursor.execute("""
         DELETE FROM expense_beneficiaries WHERE expense_id = %s;
         """, (expense_id,))
+
         cursor.execute("""
         DELETE FROM expenses WHERE id = %s;
         """, (expense_id,))

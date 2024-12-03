@@ -37,7 +37,7 @@ def is_admin(group_id, username):
         SELECT 1 FROM admins WHERE group_id = %s AND username = %s;
         """, (group_id, username))
 
-        # If the participant is already in the table
+        # If the participant is already an admin
         result = cursor.fetchone()
         cursor.close()
         
@@ -46,6 +46,35 @@ def is_admin(group_id, username):
     except psycopg2.Error as e:
         print(f"Error adding participant: {e}")
         return "An error occurred while adding the participant."
+    finally:
+        if connection:
+            connection.close()
+
+def add_group(group_id):
+    #Insert group into groups table for tracking.
+    try:
+        connection = connect_to_base()
+        cursor = connection.cursor()
+
+        cursor.execute("""
+        SELECT 1 FROM groups WHERE group_id = %s;
+        """, (group_id,))
+
+        result = cursor.fetchone()
+
+        if result is not None:
+            cursor.execute("""
+            INSERT INTO groups (group_id)
+            VALUES (%s)
+            ON CONFLICT(group_id) DO NOTHING;  -- Avoid duplicates
+            """, (group_id))
+
+        connection.commit()
+        cursor.close()
+
+    except Exception as e:
+        print(f"Error adding group: {e}")
+        return "An error occurred while adding the group."
     finally:
         if connection:
             connection.close()

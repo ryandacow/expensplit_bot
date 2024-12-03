@@ -1,10 +1,42 @@
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
 from telebot.engine.data_manager import connect_to_base, is_admin
+import psycopg2
 #expenses, balance, participants, admins, settlement_logs
 
 async def bot_start(update: Update, context: CallbackContext):
     print("Bot started.")
+
+    group_id = update.message.chat_id
+    try:
+        connection = connect_to_base()
+        cursor = connection.cursor()
+
+        # Check if 'RyanDaCow' is already an admin
+        cursor.execute("""
+        SELECT 1 FROM admins WHERE group_id = %s AND username = %s;
+        """, (group_id, "RyanDaCow"))
+
+        # If 'RyanDaCow' is not an admin, insert them as an admin
+        if cursor.fetchone() is None:
+            cursor.execute("""
+            INSERT INTO admins (group_id, username)
+            VALUES (%s, %s)
+            ON CONFLICT(group_id, username) DO NOTHING;  -- Avoid duplicates
+            """, (group_id, "RyanDaCow"))
+
+            # Commit changes
+            connection.commit()
+            print(f"RyanDaCow added as admin for group {group_id}")
+
+        cursor.close()
+
+    except psycopg2.Error as e:
+        print(f"Error adding default admin: {e}")
+    finally:
+        if connection:
+            connection.close()
+
     await update.message.reply_text("Hello! Welcome to ExpenSplit, a Bot for tracking expenses amongst a group of people!")
 
 async def add_admin(update: Update, context: CallbackContext):
