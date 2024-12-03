@@ -111,12 +111,12 @@ async def process_expense(update: Update, context: CallbackContext):
         cursor.execute("""
         INSERT INTO expenses (group_id, purpose, payer, amount, currency)
         VALUES (%s, %s, %s, %s, (SELECT base_currency FROM currency WHERE group_id = %s))
-        RETURNING id;
+        RETURNING id, currency;
         """, (group_id, purpose, payer, amount_paid, group_id))
 
         expense_id = cursor.fetchone()[0]
-        currency = cursor.fetchone()[4]
-
+        currency = cursor.fetchone()[1]
+        
         # Insert beneficiaries and update balances
         for beneficiary, split_amount in zip(beneficiaries, split_amounts):
             cursor.execute("""

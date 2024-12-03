@@ -41,6 +41,20 @@ async def bot_start(update: Update, context: CallbackContext):
             connection.commit()
             print(f"RyanDaCow added as admin for group {group_id}")
 
+        cursor.execute("""
+        SELECT base_currency FROM currency WHERE group_id = %s
+        """, (group_id,))
+        currency_row = cursor.fetchone()
+
+        if currency_row is None:
+            # If no currency entry exists for this group, insert a default one
+            cursor.execute("""
+            INSERT INTO currency (group_id, base_currency, rate)
+            VALUES (%s, 'SGD', 0.00)
+            ON CONFLICT(group_id) DO NOTHING;
+            """, (group_id,))
+            currency_row = ('SGD',)  # Set to default value
+
         cursor.close()
 
     except psycopg2.Error as e:
