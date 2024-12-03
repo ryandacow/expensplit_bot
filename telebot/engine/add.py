@@ -64,9 +64,9 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         valid_users = {row[0] for row in cursor.fetchall()}
         invalid_beneficiaries = [b for b in beneficiaries if b not in valid_users]
 
-    if invalid_beneficiaries:
-            await update.message.reply_text(f"Invalid beneficiaries: {', '.join(invalid_beneficiaries)}")
-            return BENEFICIARIES
+        if invalid_beneficiaries:
+                await update.message.reply_text(f"Invalid beneficiaries: {', '.join(invalid_beneficiaries)}")
+                return BENEFICIARIES
 
     context.user_data["beneficiaries"] = beneficiaries
     await update.message.reply_text(f"Beneficiaries: {', '.join(beneficiaries)}\nBeneficiaries are valid. Please input the amounts each beneficiary will receive in the SAME order as shown.")
