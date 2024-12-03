@@ -121,7 +121,7 @@ async def process_expense(update: Update, context: CallbackContext):
         # Insert beneficiaries and update balances
         for beneficiary, split_amount in zip(beneficiaries, split_amounts):
             cursor.execute("""
-            INSERT INTO expense_beneficiaries (expense_id, beneficiary_id, split_amount)
+            INSERT INTO expense_beneficiaries (expense_id, username, split_amount)
             VALUES (%s, %s, %s);
             """, (expense_id, beneficiary, split_amount))
 
