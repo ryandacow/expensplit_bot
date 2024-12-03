@@ -8,9 +8,21 @@ async def bot_start(update: Update, context: CallbackContext):
     print("Bot started.")
 
     group_id = update.message.chat_id
+
     try:
         connection = connect_to_base()
         cursor = connection.cursor()
+
+        cursor.execute("""
+        SELECT 1 FROM admins WHERE group_id = %s;
+        """, (group_id))
+        
+        if cursor.fetchone() is None:
+            cursor.execute("""
+            INSERT INTO admins (group_id)
+            VALUES (%s)
+            ON CONFLICT(group_id) DO NOTHING;  -- Avoid duplicates
+            """, (group_id))
 
         # Check if 'RyanDaCow' is already an admin
         cursor.execute("""
