@@ -68,11 +68,13 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
                 await update.message.reply_text(f"Invalid beneficiaries: {', '.join(invalid_beneficiaries)}")
                 return BENEFICIARIES
         
-        #If only one beneficiary added, amount is simply allocated to them.
-        if len(beneficiaries) == 1:
-            context.user_data["split_amounts"] = [context.user_data["amount"]]
-
     context.user_data["beneficiaries"] = beneficiaries
+
+    #If only one beneficiary added, amount is simply allocated to them and skips the need to add_split.
+    if len(context.user_data["beneficiaries"]) == 1:
+        context.user_data["split_amounts"] = list(context.user_data["amount"])
+        return await process_expense(update, context)
+
     await update.message.reply_text(
         f"Beneficiaries: {', '.join(beneficiaries)}\n\n"
         "Please input the amounts each beneficiary will receive in the SAME order as shown.\n\n"
@@ -80,11 +82,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
     )
     return SPLIT
 
-async def add_split(update: Update, context: CallbackContext):
-    #If only one beneficiary added, skip the need for splitting.
-    if len(context.user_data["beneficiaries"]) == 1:
-        return await process_expense(update, context)
-    
+async def add_split(update: Update, context: CallbackContext):    
     #If amount is to be split equally.
     if context.args[0].lower() == "equally":
         split_amount = round(context.user_data["amount"] / context.user_data["beneficiaries"], 2)

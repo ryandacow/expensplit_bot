@@ -8,62 +8,55 @@ async def bot_start(update: Update, context: CallbackContext):
     print("Bot started.")
 
     group_id = update.message.chat_id
+    connection = None
 
     try:
         connection = connect_to_base()
         cursor = connection.cursor()
 
+        # Begin transaction
+        cursor.execute("BEGIN;")
+
+        # Ensure the group exists in the 'groups' table
         cursor.execute("""
-        SELECT 1 FROM groups WHERE group_id = %s;
+        INSERT INTO groups (group_id)
+        VALUES (%s)
+        ON CONFLICT(group_id) DO NOTHING;
         """, (group_id,))
 
-        if cursor.fetchone() is None:
-            cursor.execute("""
-            INSERT INTO groups (group_id)
-            VALUES (%s)
-            ON CONFLICT(group_id) DO NOTHING;  -- Avoid duplicates
-            """, (group_id,))
-
-        # Check if 'RyanDaCow' is already an admin
+        # Ensure 'RyanDaCow' is an admin
         cursor.execute("""
-        SELECT 1 FROM admins WHERE group_id = %s AND username = %s;
+        INSERT INTO admins (group_id, username)
+        VALUES (%s, %s)
+        ON CONFLICT(group_id, username) DO NOTHING;
         """, (group_id, "RyanDaCow"))
 
-        # If 'RyanDaCow' is not an admin, insert them as an admin
-        if cursor.fetchone() is None:
-            cursor.execute("""
-            INSERT INTO admins (group_id, username)
-            VALUES (%s, %s)
-            ON CONFLICT(group_id, username) DO NOTHING;  -- Avoid duplicates
-            """, (group_id, "RyanDaCow"))
+        print(f"RyanDaCow ensured as admin for group {group_id}")
 
-            # Commit changes
-            connection.commit()
-            print(f"RyanDaCow added as admin for group {group_id}")
-
+        # Ensure currency entry exists for the group
         cursor.execute("""
-        SELECT base_currency FROM currency WHERE group_id = %s
+        INSERT INTO currency (group_id, base_currency, rate)
+        VALUES (%s, 'SGD', 1.00)
+        ON CONFLICT(group_id) DO NOTHING;
         """, (group_id,))
-        currency_row = cursor.fetchone()
 
-        if currency_row is None:
-            # If no currency entry exists for this group, insert a default one
-            cursor.execute("""
-            INSERT INTO currency (group_id, base_currency, rate)
-            VALUES (%s, 'SGD', 0.00)
-            ON CONFLICT(group_id) DO NOTHING;
-            """, (group_id,))
-            currency_row = ('SGD',)  # Set to default value
+        # Commit all changes
+        connection.commit()
+        print("Database updates committed successfully.")
 
-        cursor.close()
+        await update.message.reply_text(
+            "Hello! Welcome to ExpenSplit, a Bot for tracking expenses amongst a group of people!"
+        )
 
     except psycopg2.Error as e:
-        print(f"Error adding default admin: {e}")
+        if connection:
+            connection.rollback()  # Rollback in case of error
+        print(f"Error during bot initialization: {e}")
+        await update.message.reply_text("An error occurred during initialization. Please try again.")
     finally:
         if connection:
+            cursor.close()
             connection.close()
-
-    await update.message.reply_text("Hello! Welcome to ExpenSplit, a Bot for tracking expenses amongst a group of people!")
 
 async def add_admin(update: Update, context: CallbackContext):
     user = update.message.from_user.username
