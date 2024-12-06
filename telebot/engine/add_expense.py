@@ -72,7 +72,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
 
     #If only one beneficiary added, amount is simply allocated to them and skips the need to add_split.
     if len(context.user_data["beneficiaries"]) == 1:
-        context.user_data["split_amounts"] = list(context.user_data["amount"])
+        context.user_data["split_amounts"] = [context.user_data["amount"]]
         return await process_expense(update, context)
 
     await update.message.reply_text(
