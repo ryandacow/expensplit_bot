@@ -42,7 +42,7 @@ from telebot.engine.show import(
     help
 )
 
-from telebot.engine.add import(
+from telebot.engine.add_expense import(
     add_expense,
     add_purpose,
     add_payer,

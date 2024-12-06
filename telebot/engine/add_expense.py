@@ -54,7 +54,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         """, (group_id,))
         beneficiaries = [row[0] for row in cursor.fetchall()]
         await update.message.reply_text("Amount will be split amongst all beneficiaries, including the payer.")
-    
+
     else:
         # Validate beneficiaries
         beneficiaries = [b.strip() for b in beneficiaries_text.split(",")]
@@ -67,12 +67,30 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         if invalid_beneficiaries:
                 await update.message.reply_text(f"Invalid beneficiaries: {', '.join(invalid_beneficiaries)}")
                 return BENEFICIARIES
+        
+        #If only one beneficiary added, amount is simply allocated to them.
+        if len(beneficiaries) == 1:
+            context.user_data["split_amounts"] = [context.user_data["amount"]]
 
     context.user_data["beneficiaries"] = beneficiaries
-    await update.message.reply_text(f"Beneficiaries: {', '.join(beneficiaries)}\nBeneficiaries are valid. Please input the amounts each beneficiary will receive in the SAME order as shown.")
+    await update.message.reply_text(
+        f"Beneficiaries: {', '.join(beneficiaries)}\n\n"
+        "Please input the amounts each beneficiary will receive in the SAME order as shown.\n\n"
+        "Type 'equal' to distribute amounts equally."
+    )
     return SPLIT
 
 async def add_split(update: Update, context: CallbackContext):
+    #If only one beneficiary added, skip the need for splitting.
+    if len(context.user_data["beneficiaries"]) == 1:
+        return await process_expense(update, context)
+    
+    #If amount is to be split equally.
+    if context.args[0].lower() == "equally":
+        split_amount = round(context.user_data["amount"] / context.user_data["beneficiaries"], 2)
+        context.user_data["split_amounts"] = [split_amount] * len(context.user_data["beneficiaries"])
+        return await process_expense(update, context)
+    
     split_text = update.message.text.strip()
     split_amounts = split_text.split(",")
     
@@ -142,15 +160,15 @@ async def process_expense(update: Update, context: CallbackContext):
         connection.commit()
 
         # Provide confirmation
-        beneficiaries_text = ", ".join(beneficiaries)
-        amounts_text = ", ".join([f"{currency}{split_amount:.2f}" for split_amount in split_amounts])
+        beneficiaries_splits_text = ", ".join(
+            [f"{beneficiary} ({currency}{split_amount})" for beneficiary, split_amount in zip(beneficiaries, split_amounts)]
+        )
         await update.message.reply_text(
             f"Expense recorded!\n"
             f"Purpose: {purpose}\n"
             f"Amount: {currency}{amount_paid:.2f}\n"
             f"Payer: {payer}\n"
-            f"Beneficiaries: {beneficiaries_text}\n"
-            f"Split Amounts: {amounts_text}\n"
+            f"Beneficiaries and Splits: {beneficiaries_splits_text}\n"
         )
 
     except Exception as e:
@@ -223,15 +241,15 @@ async def undo(update: Update, context: CallbackContext):
         connection.commit()
 
         # Generate confirmation message
-        beneficiaries_text = ", ".join(beneficiaries)
-        amounts_text = ", ".join([f"{currency}{amount:.2f}" for amount in split_amounts])
+        beneficiaries_splits_text = ", ".join(
+            [f"{beneficiary} ({currency}{split_amount})" for beneficiary, split_amount in zip(beneficiaries, split_amounts)]
+        )
         await update.message.reply_text(
-            f"Last Expense Undone!\n"
+            f"Expense recorded!\n"
             f"Purpose: {purpose}\n"
-            f"Amount: {currency}{amount_paid}\n"
+            f"Amount: {currency}{amount_paid:.2f}\n"
             f"Payer: {payer}\n"
-            f"Beneficiaries: {beneficiaries_text}\n"
-            f"Split Amounts: {amounts_text}\n"
+            f"Beneficiaries and Splits: {beneficiaries_splits_text}\n"
         )
     except Exception as e:
         connection.rollback()

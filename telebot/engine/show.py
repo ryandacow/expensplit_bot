@@ -3,6 +3,8 @@ from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
 from telebot.engine.data_manager import connect_to_base, is_member
 #expenses, balance, participants, admins, settlement_logs
 #from telebot.engine.currency import base_currency
+#List of Commands:
+#show_balance, show_expenses, help
 
 async def show_balance(update: Update, context: CallbackContext):
     group_id = update.message.chat_id  # Get group ID
@@ -70,6 +72,8 @@ async def show_balance(update: Update, context: CallbackContext):
             cursor.close()
             connection.close()
 
+
+
 async def show_expenses(update: Update, context: CallbackContext):
     group_id = update.message.chat_id  # Get group ID
 
@@ -98,14 +102,15 @@ async def show_expenses(update: Update, context: CallbackContext):
 
         for i, expense in enumerate(expenses, start=1):
             beneficiaries = expense[4]  # JSON array of beneficiaries and amounts
-            beneficiaries_text = ", ".join([f"{b['beneficiary']}" for b in beneficiaries])
-            split_amounts_text = ", ".join([f"{expense[3]}{b['amount']:.2f}" for b in beneficiaries])
+            beneficiaries_splits_text = ", ".join(
+                [f"{b['beneficiary']} ({expense[3]}{b['amount']:.2f})" for b in beneficiaries]
+            )
+
             print_expenses += (
                 f"*{i}.* Purpose: {expense[0]}\n"
                 f"   Payer: {expense[1]}\n"
                 f"   Amount Paid: {expense[3]}{expense[2]:.2f}\n"
-                f"   Beneficiaries: {beneficiaries_text}\n"
-                f"   Split Amounts: {split_amounts_text}\n"
+                f"   Beneficiaries: {beneficiaries_splits_text}\n"
             )
 
         await update.message.reply_text(print_expenses, parse_mode="Markdown")
@@ -116,6 +121,8 @@ async def show_expenses(update: Update, context: CallbackContext):
         if connection:
             cursor.close()
             connection.close()
+
+
 
 async def help(update: Update, context: CallbackContext): #convert to inline buttons eventually
     await update.message.reply_text(
