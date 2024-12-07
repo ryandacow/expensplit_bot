@@ -39,7 +39,8 @@ from telebot.engine.members import(
 from telebot.engine.show import(
     show_expenses, 
     show_balance,
-    help
+    help,
+    show_spending
 )
 
 from telebot.engine.add_expense import(
@@ -96,6 +97,7 @@ async def init_application():
     application.add_handler(CommandHandler("show_balance", show_balance))
     application.add_handler(CommandHandler("show_expenses", show_expenses))
     application.add_handler(CommandHandler("help", help))
+    application.add_handler(CommandHandler("show_spending", show_spending))
 
     application.add_handler(CommandHandler("add_admin", add_admin))
     application.add_handler(CommandHandler("remove_admin", remove_admin))
