@@ -196,7 +196,7 @@ async def show_spending(update: Update, context: CallbackContext):
             """, (group_id, ))
             total_spending = cursor.fetchall()
 
-            if total_spending is None:
+            if not total_spending:
                 await update.message.reply_text(f"No spending data found for this group.")
                 return
 
