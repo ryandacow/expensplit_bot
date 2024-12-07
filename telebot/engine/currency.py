@@ -14,7 +14,7 @@ async def show_currency(update: Update, context: CallbackContext):
     try:
         cursor = connection.cursor()
 
-         # Query to get the base_currency for the group
+        # Query to get the base_currency for the group
         cursor.execute("""
         SELECT base_currency FROM currency WHERE group_id = %s;
         """, (group_id,))

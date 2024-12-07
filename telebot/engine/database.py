@@ -50,6 +50,7 @@ def setup_database():
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS expense_beneficiaries (
             id SERIAL PRIMARY KEY,
+            group_id BIGINT REFERENCES groups(group_id),                   -- Group the beneficiary belongs to
             expense_id INTEGER REFERENCES expenses(id) ON DELETE CASCADE,  -- Link to the expense
             username TEXT,                                                 -- User ID of the beneficiary
             split_amount NUMERIC                                           -- Amount each beneficiary owes

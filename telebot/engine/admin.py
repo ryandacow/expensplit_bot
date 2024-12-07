@@ -45,7 +45,13 @@ async def bot_start(update: Update, context: CallbackContext):
         print("Database updates committed successfully.")
 
         await update.message.reply_text(
-            "Hello! Welcome to ExpenSplit, a Bot for tracking expenses amongst a group of people!"
+            "Hello! Welcome to ExpenSplit, a Bot for tracking expenses amongst a group of people!\n\n"
+            "To begin, use /add_member to include an individual in the tracker.\n"
+            "Then use /set_currency to change the currency of the tracker.\n\n"
+            "Use /help to show a list of common commands.\n"
+            "DISCLAIMERS: DO NOT USE /convert_currency until the end of the trip.\n"
+            "Please give the bot one minute up to one minute to respond as it takes time for the server to boot.\n\n"
+            "Please enjoy using ExpenSplit! :D"
         )
 
     except psycopg2.Error as e:

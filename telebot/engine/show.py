@@ -4,7 +4,7 @@ from telebot.engine.data_manager import connect_to_base, is_member
 #expenses, balance, participants, admins, settlement_logs
 #from telebot.engine.currency import base_currency
 #List of Commands:
-#show_balance, show_expenses, help
+#show_balance, show_expenses, help, show_spending
 
 async def show_balance(update: Update, context: CallbackContext):
     group_id = update.message.chat_id  # Get group ID
@@ -140,3 +140,76 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
         "/valid_currencies: Shows all currencies that can be set\n\n"
         "/cancel: Cancels ongoing command (add_expense, settle_all)"
     )
+
+
+
+async def show_spending(update: Update, context: CallbackContext):
+    group_id = update.message.chat_id
+
+    #If username is given, show spending of that individual.
+    if context.args:
+        user_name = context.args[0].strip().lower()
+
+        try:
+            connection = connect_to_base()
+            cursor = connection.cursor()
+
+            cursor.execute("""
+            SELECT username FROM participants WHERE group_id = %s AND username = %s;
+            """, (group_id, user_name))
+            if not cursor.fetchone():
+                await update.message.reply_text(f"{user_name} is not a participant in this group. Use /add_member to add them!")
+                return
+
+            cursor.execute("""
+            SELECT SUM(split_amount) as total_spent
+            FROM expense_beneficiaries
+            WHERE group_id = %s AND username = %s;
+            """, (group_id, user_name))
+            spending_data = cursor.fetchone()
+
+            total_spent = spending_data[0] if spending_data[0] else 0.00
+            await update.message.reply_text(
+                f"*Spending Overview for {user_name}*:\n"
+                f"Total Spent: {total_spent:.2f}",
+                parse_mode="Markdown"
+            )
+        
+        except Exception as e:
+            await update.message.reply_text(f"Error while fetching expenses: {e}")
+        finally:
+            if connection:
+                cursor.close()
+                connection.close()
+
+    if not context.args: 
+        try:
+            connection = connect_to_base()
+            cursor = connection.cursor()
+
+            cursor.execute("""
+            SELECT username, SUM(split_amount) as total_spent
+            FROM expense_beneficiaries
+            WHERE group_id = %s
+            GROUP by username
+            ORDER by total_spent DESC;
+            """, (group_id, ))
+            total_spending = cursor.fetchall()
+
+            if total_spending is None:
+                await update.message.reply_text(f"No spending data found for this group.")
+                return
+
+            spending_text = "Group Spending Overview:\n"
+            for username, total_spent in total_spending:
+                spending_text += f"{username}: {total_spent:.2f}\n"
+
+            
+            await update.message.reply_text(spending_text, parse_mode="Markdown")
+
+        except Exception as e:
+            await update.message.reply_text(f"Error while fetching expenses: {e}")
+        finally:
+            if connection:
+                cursor.close()
+                connection.close()
