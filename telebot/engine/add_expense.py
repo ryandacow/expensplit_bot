@@ -1,6 +1,7 @@
 from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
+from telegram.ext import CommandHandler, CallbackContext, ConversationHandler, CallbackQueryHandler, Updater
 from telebot.engine.data_manager import connect_to_base, is_member
+import asyncio, threading
 #insert_expense, balance, participants, admins, settlement_logs
 
 PURPOSE, PAYER, AMOUNT, BENEFICIARIES, SPLIT = range(5)
@@ -11,7 +12,12 @@ async def add_expense(update: Update, context: CallbackContext):
 
 async def add_purpose(update: Update, context: CallbackContext):
     context.user_data["purpose"] = update.message.text
-    await update.message.reply_text("Who paid?")
+    reply_message = await update.message.reply_text("Who paid?")
+
+    await asyncio.sleep(5)  # Optional: delay to allow user to read
+    await context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
+    await context.bot.delete_message(chat_id=reply_message.chat_id, message_id=reply_message.message_id)
+    
     return PAYER
 
 async def add_payer(update: Update, context: CallbackContext):

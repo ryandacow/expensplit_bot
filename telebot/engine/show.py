@@ -201,7 +201,7 @@ async def show_spending(update: Update, context: CallbackContext):
                 await update.message.reply_text(f"No spending data found for this group.")
                 return
 
-            spending_text = "Group Spending Overview:\n"
+            spending_text = "*Group Spending Overview:*\n"
             for username, total_spent in total_spending:
                 spending_text += f"{username}: {total_spent:.2f}\n"
 
