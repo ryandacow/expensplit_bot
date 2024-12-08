@@ -11,17 +11,21 @@ async def add_expense(update: Update, context: CallbackContext):
     return PURPOSE
 
 async def add_purpose(update: Update, context: CallbackContext):
-    context.user_data["purpose"] = update.message.text
-    bot_message = context.user_data["bot_message"]
-
-    await asyncio.sleep(2)
+    #Auto delete message
+    bot_message = context.user_data.get("bot_message")
     await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
     
+    context.user_data["purpose"] = update.message.text
     context.user_data["bot_message"] = await update.message.reply_text("Who paid?")
     return PAYER
 
 async def add_payer(update: Update, context: CallbackContext):
+    #Auto delete message
+    bot_message = context.user_data.get("bot_message")
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+
     payer = update.message.text.strip()
     group_id = update.message.chat_id
 
@@ -30,10 +34,15 @@ async def add_payer(update: Update, context: CallbackContext):
         return PAYER
     
     context.user_data["payer"] = payer
-    await update.message.reply_text("How much was the expense (in amount)?")
+    context.user_data["bot_message"] = await update.message.reply_text("How much was the expense (in amount)?")
     return AMOUNT
 
 async def add_amount(update:Update, context: CallbackContext):
+    #Auto delete message
+    bot_message = context.user_data.get("bot_message")
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+
     try:
         amount = float(update.message.text)
         if amount <= 0:
@@ -41,7 +50,7 @@ async def add_amount(update:Update, context: CallbackContext):
             return AMOUNT
     
         context.user_data["amount"] = amount
-        await update.message.reply_text("Please input beneficiaries (comma-separated). Type all to include all members.")
+        context.user_data["bot_message"] = await update.message.reply_text("Please input beneficiaries (comma-separated). Type all to include all members.")
         return BENEFICIARIES
     
     except ValueError:
@@ -49,8 +58,14 @@ async def add_amount(update:Update, context: CallbackContext):
         return AMOUNT
     
 async def add_beneficiaries(update: Update, context: CallbackContext):
+    #Auto delete message
+    bot_message = context.user_data.get("bot_message")
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+
     beneficiaries_text = update.message.text.strip()
     group_id = update.message.chat_id
+
     connection = connect_to_base()
     cursor = connection.cursor()
 
@@ -60,7 +75,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         SELECT username FROM participants WHERE group_id = %s;
         """, (group_id,))
         beneficiaries = [row[0] for row in cursor.fetchall()]
-        await update.message.reply_text("Amount will be split amongst all beneficiaries, including the payer.")
+        context.user_data["all_beneficiary_message"] = await update.message.reply_text("Amount will be split amongst all beneficiaries, including the payer.")
 
     else:
         # Validate beneficiaries
@@ -82,25 +97,32 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         context.user_data["split_amounts"] = [context.user_data["amount"]]
         return await process_expense(update, context)
 
-    await update.message.reply_text(
+    context.user_data["bot_message"] = await update.message.reply_text(
         f"Beneficiaries: {', '.join(beneficiaries)}\n\n"
         "Please input the amounts each beneficiary will receive in the SAME order as shown.\n\n"
         "Type 'equal' to distribute amounts equally."
     )
     return SPLIT
 
-async def add_split(update: Update, context: CallbackContext):    
+async def add_split(update: Update, context: CallbackContext):
+    #Auto delete message
+    bot_message = context.user_data.get("bot_message")
+    all_beneficiary_message = context.user_data.get("all_beneficiary_message")
+
+    if all_beneficiary_message:
+        await context.bot.deleteMessage(chat_id=all_beneficiary_message.chat_id, message_id=all_beneficiary_message.message_id)
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+
     #If amount is to be split equally.
-    if context.args[0].lower() == "equal":
+    split_text = update.message.text.strip()
+    if update.message.text.strip() == "equal":
         split_amount = round(context.user_data["amount"] / context.user_data["beneficiaries"], 2)
         context.user_data["split_amounts"] = [split_amount] * len(context.user_data["beneficiaries"])
         return await process_expense(update, context)
     
-    split_text = update.message.text.strip()
-    split_amounts = split_text.split(",")
-    
     try:
-        split_amounts = [float(amount.strip()) for amount in split_amounts]
+        split_amounts = [float(amount.strip()) for amount in split_text.split(",")]
 
         if len(split_amounts) != len(context.user_data["beneficiaries"]):
             await update.message.reply_text("The number of amounts does not match the number of beneficiaries. Please input again.")
