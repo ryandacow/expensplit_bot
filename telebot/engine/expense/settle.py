@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
-from telebot.engine.data_manager import connect_to_base, is_admin
+from telebot.engine.supabase.data_manager import connect_to_base, is_admin
 #expenses, balance, participants, admins, settlement_logs
 
 SETTLE_CONFIRMATION = range(1)

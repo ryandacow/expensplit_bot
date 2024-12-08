@@ -1,68 +1,8 @@
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler, CallbackQueryHandler
-from telebot.engine.data_manager import connect_to_base, is_admin
+from telebot.engine.supabase.data_manager import connect_to_base, is_admin
 import psycopg2
 #expenses, balance, participants, admins, settlement_logs
-
-async def bot_start(update: Update, context: CallbackContext):
-    print("Bot started.")
-
-    group_id = update.message.chat_id
-    connection = None
-
-    try:
-        connection = connect_to_base()
-        cursor = connection.cursor()
-
-        # Begin transaction
-        cursor.execute("BEGIN;")
-
-        # Ensure the group exists in the 'groups' table
-        cursor.execute("""
-        INSERT INTO groups (group_id)
-        VALUES (%s)
-        ON CONFLICT(group_id) DO NOTHING;
-        """, (group_id,))
-
-        # Ensure 'RyanDaCow' is an admin
-        cursor.execute("""
-        INSERT INTO admins (group_id, username)
-        VALUES (%s, %s)
-        ON CONFLICT(group_id, username) DO NOTHING;
-        """, (group_id, "RyanDaCow"))
-
-        print(f"RyanDaCow ensured as admin for group {group_id}")
-
-        # Ensure currency entry exists for the group
-        cursor.execute("""
-        INSERT INTO currency (group_id, base_currency, rate)
-        VALUES (%s, 'SGD', 1.00)
-        ON CONFLICT(group_id) DO NOTHING;
-        """, (group_id,))
-
-        # Commit all changes
-        connection.commit()
-        print("Database updates committed successfully.")
-
-        await update.message.reply_text(
-            "Hello! Welcome to ExpenSplit, a Bot for tracking expenses amongst a group of people!\n\n"
-            "To begin, use /add_member to include an individual in the tracker.\n"
-            "Then use /set_currency to change the currency of the tracker.\n\n"
-            "Use /help to show a list of common commands.\n"
-            "DISCLAIMERS: DO NOT USE /convert_currency until the end of the trip.\n"
-            "Please give the bot one minute up to one minute to respond as it takes time for the server to boot.\n\n"
-            "Please enjoy using ExpenSplit! :D"
-        )
-
-    except psycopg2.Error as e:
-        if connection:
-            connection.rollback()  # Rollback in case of error
-        print(f"Error during bot initialization: {e}")
-        await update.message.reply_text("An error occurred during initialization. Please try again.")
-    finally:
-        if connection:
-            cursor.close()
-            connection.close()
 
 async def add_admin(update: Update, context: CallbackContext):
     user = update.message.from_user.username

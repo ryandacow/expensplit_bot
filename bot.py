@@ -1,15 +1,20 @@
 from quart import Quart, request
 from telegram import Bot, Update
-from telegram.ext import Application, CommandHandler, CallbackContext, ConversationHandler, filters, MessageHandler
+from telegram.ext import Application, CommandHandler, CallbackContext, ConversationHandler, filters, MessageHandler, CallbackQueryHandler
 from telebot.credentials import BOT_TOKEN
-from telebot.engine.database import setup_database
+from telebot.engine.supabase.database import setup_database
+from telebot.engine.setup.base import inline_button_handler
 import os
 import requests
 import asyncio
 import httpx, logging
 
-from telebot.engine.admin import (
-    bot_start, 
+from telebot.engine.setup.base import(
+    bot_start,
+    help
+)
+
+from telebot.engine.setup.admin import (
     add_admin,
     remove_admin,
     show_admins,
@@ -19,15 +24,18 @@ from telebot.engine.admin import (
     DELETE_ALL_CONFIRMATION
 )
 
-from telebot.engine.settle import(
+from telebot.engine.expense.settle import(
     settle_all_start, 
     settle_all_confirm, 
     settle_all_cancel, 
     SETTLE_CONFIRMATION,
 )
 
-from telebot.engine.members import(
-    add_member, 
+from telebot.engine.setup.members import(
+    add_member,
+    specify_member,
+    add_member_cancel,
+    ADD_MEMBER,
     remove_member, 
     show_members,
     remove_all_cancel,
@@ -36,14 +44,13 @@ from telebot.engine.members import(
     REMOVE_CONFIRMATION
 )
 
-from telebot.engine.show import(
+from telebot.engine.expense.show import(
     show_expenses, 
     show_balance,
-    help,
     show_spending
 )
 
-from telebot.engine.add_expense import(
+from telebot.engine.expense.add_expense import(
     add_expense,
     add_purpose,
     add_payer,
@@ -59,7 +66,7 @@ from telebot.engine.add_expense import(
     undo
 )
 
-from telebot.engine.currency import(
+from telebot.engine.expense.currency import(
     set_currency,
     valid_currencies,
     show_currency,
@@ -87,6 +94,7 @@ async def init_application():
 
     # Register commands
     application.add_handler(CommandHandler("start", bot_start))
+    application.add_handler(CallbackQueryHandler(inline_button_handler))
 
     application.add_handler(CommandHandler("add_member", add_member))
     application.add_handler(CommandHandler("remove_member", remove_member))
@@ -120,6 +128,19 @@ async def init_application():
     ) 
 
     application.add_handler(settle_all_conv_handler)
+
+    #/add_member command
+    add_member_handler = ConversationHandler(
+        entry_points=[CommandHandler("add_member", add_member)],
+        states={
+            ADD_MEMBER: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, specify_member),  # Only plain text (not commands)
+            ],
+        },
+        fallbacks=[CommandHandler("cancel", add_member_cancel)],
+    ) 
+
+    application.add_handler(add_member_handler)
 
     #remove_all_members command
     remove_all_conv_handler = ConversationHandler(

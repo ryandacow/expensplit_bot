@@ -1,18 +1,24 @@
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
-from telebot.engine.data_manager import add_participant, remove_participant, is_member, is_admin, connect_to_base
+from telebot.engine.supabase.data_manager import add_participant, remove_participant, is_member, is_admin, connect_to_base
 #expenses, balance, participants, admins, settlement_logs
 
 REMOVE_CONFIRMATION = range(1)
+ADD_MEMBER = range(1)
 
 async def add_member(update: Update, context: CallbackContext):
-    if len(context.args) < 1:
-        await update.message.reply_text("Usage: /add_member <username>")
-        return
-    
-    new_member = context.args[0]
+    context.user_data["bot_message"] = await update.message.reply_text("Please input new member's name.")
+    return ADD_MEMBER
+
+async def specify_member(update: Update, context: CallbackContext):
+    new_member = update.message.text
     user = update.message.from_user.username
     group_id = update.message.chat_id
+
+    #Auto delete message
+    bot_message = context.user_data.get("bot_message")
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     if is_member(group_id, new_member):
         await update.message.reply_text(f"{new_member} is already in the group.")
@@ -25,6 +31,12 @@ async def add_member(update: Update, context: CallbackContext):
 
     except Exception as e:
         await update.message.reply_text(f"An error occurred while removing {new_member}: {str(e)}")
+
+    return ConversationHandler.END
+
+async def add_member_cancel(update: Update, context: CallbackContext):
+    await update.message.reply_text("The action to add member has been cancelled.")
+    return ConversationHandler.END
 
 async def remove_member(update: Update, context: CallbackContext):
     if len(context.args) < 1:

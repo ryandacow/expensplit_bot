@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler, CallbackQueryHandler, Updater
-from telebot.engine.data_manager import connect_to_base, is_member
+from telebot.engine.supabase.data_manager import connect_to_base, is_member
 import asyncio, threading
 #insert_expense, balance, participants, admins, settlement_logs
 

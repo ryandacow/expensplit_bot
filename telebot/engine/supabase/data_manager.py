@@ -3,7 +3,7 @@ from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
 import psycopg2
 from psycopg2 import sql
 import os
-from telebot.engine.database import connect_to_base
+from telebot.engine.supabase.database import connect_to_base
 
 def is_member(group_id, username):
     try:

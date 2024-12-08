@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
-from telebot.engine.data_manager import connect_to_base, is_member
+from telebot.engine.supabase.data_manager import connect_to_base, is_member
 import requests
 
 API_URL = "https://v6.exchangerate-api.com/v6/df74fed3c85165b35fe0b792/latest/SGD"
