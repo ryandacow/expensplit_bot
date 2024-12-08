@@ -7,16 +7,18 @@ import asyncio, threading
 PURPOSE, PAYER, AMOUNT, BENEFICIARIES, SPLIT = range(5)
 
 async def add_expense(update: Update, context: CallbackContext):
-    bot_message = await update.message.reply_text("What was the expense for?")
-    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    context.user_date["bot_message"] = await update.message.reply_text("What was the expense for?")
     return PURPOSE
 
 async def add_purpose(update: Update, context: CallbackContext):
     context.user_data["purpose"] = update.message.text
+    bot_message = context.user_data["bot_message"]
+
+    await asyncio.sleep(2)
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
     
-    bot_message = await update.message.reply_text("Who paid?")
-    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    context.user_data["bot_message"] = await update.message.reply_text("Who paid?")
     return PAYER
 
 async def add_payer(update: Update, context: CallbackContext):
