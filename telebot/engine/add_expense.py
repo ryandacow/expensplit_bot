@@ -7,16 +7,18 @@ import asyncio, threading
 PURPOSE, PAYER, AMOUNT, BENEFICIARIES, SPLIT = range(5)
 
 async def add_expense(update: Update, context: CallbackContext):
-    await update.message.reply_text("What was the expense for?")
+    context.user_data["bot_message"] = await update.message.reply_text("What was the expense for?")
     return PURPOSE
 
 async def add_purpose(update: Update, context: CallbackContext):
     context.user_data["purpose"] = update.message.text
-    reply_message = await update.message.reply_text("Who paid?")
-
+    bot_message = context.user_data["bot_message"]
+    reply_message = context.user_data["purpose"]
     await asyncio.sleep(5)  # Optional: delay to allow user to read
-    await context.bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
-    await context.bot.delete_message(chat_id=reply_message.chat_id, message_id=reply_message.message_id)
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=reply_message.chat_id, message_id=reply_message.message_id)
+    
+    await update.message.reply_text("Who paid?")
     
     return PAYER
 
@@ -90,7 +92,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
 
 async def add_split(update: Update, context: CallbackContext):    
     #If amount is to be split equally.
-    if context.args[0].lower() == "equally":
+    if context.args[0].lower() == "equal":
         split_amount = round(context.user_data["amount"] / context.user_data["beneficiaries"], 2)
         context.user_data["split_amounts"] = [split_amount] * len(context.user_data["beneficiaries"])
         return await process_expense(update, context)
