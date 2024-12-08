@@ -272,7 +272,7 @@ async def undo(update: Update, context: CallbackContext):
             [f"{beneficiary} ({currency}{split_amount})" for beneficiary, split_amount in zip(beneficiaries, split_amounts)]
         )
         await update.message.reply_text(
-            f"Expense recorded!\n"
+            f"Last expense undone!\n"
             f"Purpose: {purpose}\n"
             f"Amount: {currency}{amount_paid:.2f}\n"
             f"Payer: {payer}\n"

@@ -16,17 +16,19 @@ async def show_balance(update: Update, context: CallbackContext):
 
         # Fetch the base currency for the group
         cursor.execute("""
-        SELECT base_currency FROM currency WHERE group_id = %s;
+        SELECT base_currency 
+        FROM currency 
+        WHERE group_id = %s;
         """, (group_id,))
         base_currency = cursor.fetchone()
         currency = base_currency[0] if base_currency else "SGD"
 
         # Fetch all balances for the group
         cursor.execute("""
-        SELECT participants.username, balances.balance 
-        FROM balances 
-        JOIN participants ON balances.username = participants.username
-        WHERE balances.group_id = %s;
+        SELECT p.username, b.balance 
+        FROM balances b
+        JOIN participants p ON b.group_id = p.group_id AND b.username = p.username
+        WHERE b.group_id = %s;
         """, (group_id,))
         balances = cursor.fetchall()
 
@@ -47,10 +49,10 @@ async def show_balance(update: Update, context: CallbackContext):
             user_name = context.args[0].lower()
 
             cursor.execute("""
-            SELECT balances.balance 
-            FROM balances 
-            JOIN participants ON balances.username = participants.username
-            WHERE participants.group_id = %s AND participants.username = %s;
+            SELECT b.balance 
+            FROM balances b
+            JOIN participants p ON b.group_id = p.group_id AND b.username = p.username
+            WHERE b.group_id = %s AND LOWER(p.username) = %s;
             """, (group_id, user_name))
             user_balance = cursor.fetchone()
 
