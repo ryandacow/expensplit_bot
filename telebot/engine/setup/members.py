@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
 from telebot.engine.supabase.data_manager import add_participant, remove_participant, is_member, is_admin, connect_to_base
+import logging
 #expenses, balance, participants, admins, settlement_logs
 
 REMOVE_CONFIRMATION = range(1)
@@ -11,6 +12,8 @@ async def add_member(update: Update, context: CallbackContext):
     return ADD_MEMBER
 
 async def specify_member(update: Update, context: CallbackContext):
+    print(f"Received input: {update.message.text}")
+    logging.info(f"Received input: {update.message.text}")
     new_member = update.message.text
     user = update.message.from_user.username
     group_id = update.message.chat_id
