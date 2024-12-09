@@ -79,7 +79,7 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
     help_text = (
         "Below are a list of common commands and how to use them!\n"
         "/start: Initialises the Bot. Activate once before utilising the bot\n\n"
-        "/add_member <name>: Adds a member to be tracked\n"
+        "/add_member: Adds a member to be tracked\n"
         "/show_members: Shows all members being tracked\n\n"
         "/add_expense: Add an expense to be tracked\n"
         "/undo: Undoes the latest expense added\n"
@@ -87,8 +87,8 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
         "/show_balance: Shows balances of individual/all participant(s)\n"
         "/show_spending: Shows individual/group spending(s) \n"
         "/settle_all: Resets all balances after being settled\n\n"
-        "/set_currency: Sets the currency expenses are recorded down in\n"
-        "/convert_currency: Converts all expenses and balances to SGD\n"
+        "/set_currency: Sets the currency expenses are tracked in\n"
+        "/convert_currency: Converts all balances to SGD\n"
         "/valid_currencies: Shows all currencies that can be set\n\n"
         "/cancel: Cancels ongoing command (add_expense, settle_all)"
     )
@@ -96,7 +96,8 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
     if update.callback_query:  # Inline button case
         query = update.callback_query
         await query.answer()  # Acknowledge the button press
-        await query.edit_message_text(help_text)  # Edit the message with the help text
+        await context.bot.send_message(chat_id=query.message.chat_id, text=help_text)
+        #await query.edit_message_text(help_text)  # Replace the message with the help text
 
     else:  # Command-based case
         await update.message.reply_text(help_text)
