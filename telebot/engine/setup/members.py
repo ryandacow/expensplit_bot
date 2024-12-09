@@ -5,11 +5,11 @@ import logging
 #expenses, balance, participants, admins, settlement_logs
 
 REMOVE_CONFIRMATION = range(1)
-ADD_MEMBER = range(1)
+MEMBER_CONFIRMATION = range(1)
 
 async def add_member(update: Update, context: CallbackContext):
     context.user_data["bot_message"] = await update.message.reply_text("Please input new member's name.")
-    return ADD_MEMBER
+    return MEMBER_CONFIRMATION
 
 async def specify_member(update: Update, context: CallbackContext):
     print(f"Received input: {update.message.text}")

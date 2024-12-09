@@ -35,7 +35,7 @@ from telebot.engine.setup.members import(
     add_member,
     specify_member,
     add_member_cancel,
-    ADD_MEMBER,
+    MEMBER_CONFIRMATION,
     remove_member, 
     show_members,
     remove_all_cancel,
@@ -133,8 +133,8 @@ async def init_application():
     add_member_handler = ConversationHandler(
         entry_points=[CommandHandler("add_member", add_member)],
         states={
-            ADD_MEMBER: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, specify_member),  # Only plain text (not commands)
+            MEMBER_CONFIRMATION: [
+                MessageHandler(filters.ALL & ~filters.COMMAND, specify_member),  # Only plain text (not commands)
             ],
         },
         fallbacks=[CommandHandler("cancel", add_member_cancel)],
