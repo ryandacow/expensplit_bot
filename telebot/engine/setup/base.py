@@ -77,9 +77,6 @@ async def inline_button_handler(update: Update, context: CallbackContext):
     if query.data == "add_member":
         await query.message.reply_text("Please input new member's name.")
         return ADD_MEMBER
-    elif query.data == "help":
-        await query.message.reply_text("Here are the available commands:\n/add_member - Add a member.\n/set_currency - Set the currency.")
-        return ConversationHandler.END
 
 async def help(update: Update, context: CallbackContext): #convert to inline buttons eventually
     await update.message.reply_text(

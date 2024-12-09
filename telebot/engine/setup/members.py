@@ -22,7 +22,7 @@ async def specify_member(update: Update, context: CallbackContext):
 
     if is_member(group_id, new_member):
         await update.message.reply_text(f"{new_member} is already in the group.")
-        return
+        return ConversationHandler.END
 
     # Add the member from the database
     try:
