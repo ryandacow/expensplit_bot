@@ -94,7 +94,7 @@ async def init_application():
 
     # Register commands
     application.add_handler(CommandHandler("start", bot_start))
-    
+
     #/add_member command
     add_member_handler = ConversationHandler(
         entry_points=[
@@ -152,7 +152,8 @@ async def init_application():
                 MessageHandler(filters.TEXT & ~filters.COMMAND, remove_all_confirm),  # Only plain text (not commands)
             ],
         },
-        fallbacks=[CommandHandler("cancel", remove_all_cancel)],
+        fallbacks=[CommandHandler("cancel", remove_all_cancel)]
+        per_message=True,
     )
 
     application.add_handler(remove_all_conv_handler)
