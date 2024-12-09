@@ -94,6 +94,22 @@ async def init_application():
 
     # Register commands
     application.add_handler(CommandHandler("start", bot_start))
+    
+    #/add_member command
+    add_member_handler = ConversationHandler(
+        entry_points=[
+            CommandHandler("add_member", add_member),
+            CallbackQueryHandler(inline_button_handler, pattern="^add_member$"),
+        ],
+        states={
+            MEMBER_CONFIRMATION: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, specify_member),  # Only plain text (not commands)
+            ],
+        },
+        fallbacks=[CommandHandler("cancel", add_member_cancel)],
+    ) 
+
+    application.add_handler(add_member_handler)
     application.add_handler(CallbackQueryHandler(inline_button_handler))
 
     application.add_handler(CommandHandler("remove_member", remove_member))
@@ -127,22 +143,6 @@ async def init_application():
     ) 
 
     application.add_handler(settle_all_conv_handler)
-
-    #/add_member command
-    add_member_handler = ConversationHandler(
-        entry_points=[
-            CommandHandler("add_member", add_member),
-            CallbackQueryHandler(inline_button_handler, pattern="^add_member$"),
-        ],
-        states={
-            MEMBER_CONFIRMATION: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, specify_member),  # Only plain text (not commands)
-            ],
-        },
-        fallbacks=[CommandHandler("cancel", add_member_cancel)],
-    ) 
-
-    application.add_handler(add_member_handler)
 
     #remove_all_members command
     remove_all_conv_handler = ConversationHandler(

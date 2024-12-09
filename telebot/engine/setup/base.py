@@ -45,8 +45,7 @@ async def bot_start(update: Update, context: CallbackContext):
         print("Database updates committed successfully.")
 
         keyboard = [
-            [InlineKeyboardButton("Add Member", callback_data="add_member")],
-            [InlineKeyboardButton("Help", callback_data="help")]
+            [InlineKeyboardButton("Add Member", callback_data="add_member")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -76,6 +75,7 @@ async def inline_button_handler(update: Update, context: CallbackContext):
 
     if query.data == "add_member":
         await query.message.reply_text("Please input new member's name.")
+        print("Transitioning to MEMBER_CONFIRMATION")
         return MEMBER_CONFIRMATION
 
 async def help(update: Update, context: CallbackContext): #convert to inline buttons eventually
