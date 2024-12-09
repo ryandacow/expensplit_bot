@@ -131,10 +131,10 @@ async def init_application():
     add_member_handler = ConversationHandler(
         entry_points=[
             CommandHandler("add_member", add_member),
+            CallbackQueryHandler(add_member, pattern="^add_member$"),  # Triggered by inline button
         ],
         states={
             MEMBER_CONFIRMATION: [
-                CallbackQueryHandler(add_member, pattern="^add_member$"),  # Triggered by inline button
                 MessageHandler(filters.TEXT & ~filters.COMMAND, specify_member),  # Only plain text (not commands)
             ],
         },

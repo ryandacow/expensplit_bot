@@ -8,7 +8,13 @@ REMOVE_CONFIRMATION = range(1)
 MEMBER_CONFIRMATION = range(1)
 
 async def add_member(update: Update, context: CallbackContext):
-    context.user_data["bot_message"] = await update.message.reply_text("Please input new member's name.")
+    if update.callback_query:  # Inline button case
+        query = update.callback_query
+        await query.answer()
+        await query.message.reply_text("Please input the new member's name:")
+    else:
+        context.user_data["bot_message"] = await update.message.reply_text("Please input new member's name.")
+    
     return MEMBER_CONFIRMATION
 
 async def specify_member(update: Update, context: CallbackContext):

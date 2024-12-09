@@ -69,15 +69,6 @@ async def bot_start(update: Update, context: CallbackContext):
             cursor.close()
             connection.close()
 
-#until i figure out how to use inline buttons because CallbackQuery and CommandHandler cant work together
-async def inline_button_handler(update: Update, context: CallbackContext):
-    query = update.callback_query
-    await query.answer()  # Acknowledge the button click
-
-    if query.data == "add_member":
-        await query.message.reply_text("Please input new member's name.")
-        print("Transitioning to MEMBER_CONFIRMATION")
-        return MEMBER_CONFIRMATION
 
 async def help(update: Update, context: CallbackContext): #convert to inline buttons eventually
     await update.message.reply_text(
