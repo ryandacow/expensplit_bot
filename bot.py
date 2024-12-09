@@ -111,6 +111,7 @@ async def init_application():
     ) 
 
     application.add_handler(add_member_handler)
+    application.add_handler(CommandHandler("add_member", add_member))
     application.add_handler(CallbackQueryHandler(inline_button_handler))
 
     application.add_handler(CommandHandler("remove_member", remove_member))
