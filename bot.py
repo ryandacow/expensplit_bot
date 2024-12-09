@@ -94,6 +94,7 @@ async def init_application():
     # Register commands
     application.add_handler(CommandHandler("start", bot_start))
     application.add_handler(CommandHandler("help", help))
+    application.add_handler(CallbackQueryHandler(help, pattern="^help$"))
 
     application.add_handler(CommandHandler("remove_member", remove_member))
     application.add_handler(CommandHandler("show_members", show_members))

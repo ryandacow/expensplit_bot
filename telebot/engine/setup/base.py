@@ -46,13 +46,14 @@ async def bot_start(update: Update, context: CallbackContext):
 
         keyboard = [
             [InlineKeyboardButton("Add Member", callback_data="add_member")]
+            [InlineKeyboardButton("Help", callback_data="help")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         await update.message.reply_text(
             "Hello! Welcome to ExpenSplit, a Bot for tracking expenses amongst a group of people!\n\n"
-            "To begin, click the button below to add an individual in the tracker.\n\n"
-            "Use /help to show a list of common commands.\n"
+            "To begin, use Add Member below to add individual(s) in the tracker.\n\n"
+            "You can also use /help to show a list of common commands.\n\n"
             "DISCLAIMERS: DO NOT USE /convert_currency until the end of the trip.\n"
             "Please give the bot up to one minute to respond as it takes time for the server to boot.\n\n"
             "Please enjoy using ExpenSplit! :D",
@@ -71,7 +72,7 @@ async def bot_start(update: Update, context: CallbackContext):
 
 
 async def help(update: Update, context: CallbackContext): #convert to inline buttons eventually
-    await update.message.reply_text(
+    help_text = (
         "Below are a list of common commands and how to use them!\n"
         "/start: Initialises the Bot. Activate once before utilising the bot\n\n"
         "/add_member <name>: Adds a member to be tracked\n"
@@ -87,3 +88,11 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
         "/valid_currencies: Shows all currencies that can be set\n\n"
         "/cancel: Cancels ongoing command (add_expense, settle_all)"
     )
+
+    if update.callback_query:  # Inline button case
+        query = update.callback_query
+        await query.answer()
+        await update.message.reply_text(help_text)
+
+    else: #Command handler case
+        await update.message.reply_text(help_text)

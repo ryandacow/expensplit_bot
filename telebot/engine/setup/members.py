@@ -13,7 +13,7 @@ async def add_member(update: Update, context: CallbackContext):
         await query.answer()
         context.user_data["bot_message"] = await query.message.reply_text("Please input the new member's name:")
     else:
-        context.user_data["bot_message"] = await update.message.reply_text("Please input new member's name.")
+        context.user_data["bot_message"] = await update.message.reply_text("Please input the new member's name.")
     
     return MEMBER_CONFIRMATION
 
