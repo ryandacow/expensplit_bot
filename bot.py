@@ -10,7 +10,6 @@ import httpx, logging
 
 from telebot.engine.setup.base import(
     bot_start,
-    inline_button_handler,
     help
 )
 
