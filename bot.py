@@ -134,6 +134,7 @@ async def init_application():
         ],
         states={
             MEMBER_CONFIRMATION: [
+                CallbackQueryHandler(add_member, pattern="^add_member$"),  # Triggered by inline button
                 MessageHandler(filters.TEXT & ~filters.COMMAND, specify_member),  # Only plain text (not commands)
             ],
         },
