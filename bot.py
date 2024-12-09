@@ -3,7 +3,6 @@ from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, CallbackContext, ConversationHandler, filters, MessageHandler, CallbackQueryHandler
 from telebot.credentials import BOT_TOKEN
 from telebot.engine.supabase.database import setup_database
-from telebot.engine.setup.base import inline_button_handler
 import os
 import requests
 import asyncio
@@ -11,6 +10,7 @@ import httpx, logging
 
 from telebot.engine.setup.base import(
     bot_start,
+    inline_button_handler,
     help
 )
 
@@ -136,7 +136,7 @@ async def init_application():
         ],
         states={
             MEMBER_CONFIRMATION: [
-                MessageHandler(filters.ALL & ~filters.COMMAND, specify_member),  # Only plain text (not commands)
+                MessageHandler(filters.TEXT & ~filters.COMMAND, specify_member),  # Only plain text (not commands)
             ],
         },
         fallbacks=[CommandHandler("cancel", add_member_cancel)],
