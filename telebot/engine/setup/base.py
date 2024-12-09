@@ -2,7 +2,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler, CallbackQueryHandler
 from telebot.engine.supabase.data_manager import connect_to_base, is_admin
 import psycopg2
-from telebot.engine.setup.members import ADD_MEMBER
+from telebot.engine.setup.members import MEMBER_CONFIRMATION
 
 async def bot_start(update: Update, context: CallbackContext):
     print("Bot started.")
@@ -76,7 +76,7 @@ async def inline_button_handler(update: Update, context: CallbackContext):
 
     if query.data == "add_member":
         await query.message.reply_text("Please input new member's name.")
-        return ADD_MEMBER
+        return MEMBER_CONFIRMATION
 
 async def help(update: Update, context: CallbackContext): #convert to inline buttons eventually
     await update.message.reply_text(
