@@ -95,6 +95,8 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
 
     if update.callback_query:  # Inline button case
         query = update.callback_query
-        await query.answer()
-        
-    await update.message.reply_text(help_text)
+        await query.answer()  # Acknowledge the button press
+        await query.edit_message_text(help_text)  # Edit the message with the help text
+
+    else:  # Command-based case
+        await update.message.reply_text(help_text)
