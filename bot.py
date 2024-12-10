@@ -67,6 +67,9 @@ from telebot.engine.expense.add_expense import(
 
 from telebot.engine.expense.currency import(
     set_currency,
+    find_currency,
+    set_currency_cancel,
+    CURRENCY_CONFIRMATION,
     valid_currencies,
     show_currency,
     convert_currency
@@ -183,6 +186,22 @@ async def init_application():
     ) 
 
     application.add_handler(expense_conv_handler)
+
+    #/set_currency command
+    set_currency_handler = ConversationHandler(
+        entry_points=[
+            CommandHandler("set_currency", set_currency),
+            CallbackQueryHandler(set_currency, pattern="^set_currency$"),  # Triggered by inline button
+        ],
+        states={
+            CURRENCY_CONFIRMATION: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, find_currency),  # Only plain text (not commands)
+            ],
+        },
+        fallbacks=[CommandHandler("cancel", set_currency_cancel)],
+    ) 
+
+    application.add_handler(set_currency_handler)
 
     logger.info("Telegram Bot Application initialized successfully.")
 

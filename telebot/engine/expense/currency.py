@@ -1,7 +1,7 @@
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
 from telebot.engine.supabase.data_manager import connect_to_base, is_member
-import requests
+import requests, logging
 
 API_URL = "https://v6.exchangerate-api.com/v6/df74fed3c85165b35fe0b792/latest/SGD"
 
@@ -36,13 +36,25 @@ async def show_currency(update: Update, context: CallbackContext):
         if connection:
             connection.close()
    
-
+CURRENCY_CONFIRMATION = range(1)
 
 async def set_currency(update: Update, context: CallbackContext):
-    if not context.args:
-        await update.message.reply_text("Usage: /set_currency <currency code>")
+    if update.callback_query:  # Inline button case
+        query = update.callback_query
+        await query.answer()
+        context.user_data["bot_message"] = await query.message.reply_text("Please input new base currency.")
+    
+    else:
+        context.user_data["bot_message"] = await update.message.reply_text("Please input new base currency.")
 
-    new_currency = context.args[0].upper()
+    return CURRENCY_CONFIRMATION
+        
+
+async def find_currency(update: Update, context: CallbackContext):
+    print(f"Received input: {update.message.text}")
+    logging.info(f"Received input: {update.message.text}")
+    
+    new_currency = update.message.text.upper()
     group_id = update.message.chat_id
 
     try:
@@ -84,8 +96,12 @@ async def set_currency(update: Update, context: CallbackContext):
             )
     except requests.exceptions.RequestException as e:
         await update.message.reply_text(f"Failed to fetch currency rates: {e}")
-    
 
+    return ConversationHandler.END
+    
+async def set_currency_cancel(update: Update, context: CallbackContext):
+    await update.message.reply_text("The action to set currency has been cancelled.")
+    return ConversationHandler.END
 
 async def valid_currencies(update: Update, context: CallbackContext):
     await update.message.reply_text(
