@@ -174,7 +174,10 @@ async def init_application():
 
     #add_expense command
     expense_conv_handler = ConversationHandler(
-    entry_points=[CommandHandler('add_expense', add_expense)],
+    entry_points=[
+        CommandHandler('add_expense', add_expense),
+        CallbackQueryHandler(add_expense, pattern="^add_expense$"),
+        ],
     states={
         PURPOSE: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_purpose)],
         PAYER: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_payer)],

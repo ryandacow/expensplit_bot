@@ -57,6 +57,11 @@ async def find_currency(update: Update, context: CallbackContext):
     new_currency = update.message.text.upper()
     group_id = update.message.chat_id
 
+    #Auto delete message
+    bot_message = context.user_data.get("bot_message")
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+
     try:
         # Fetch rates from ExchangeRate-API
         response = requests.get(API_URL)

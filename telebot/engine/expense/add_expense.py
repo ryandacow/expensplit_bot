@@ -7,7 +7,13 @@ import asyncio, threading
 PURPOSE, PAYER, AMOUNT, BENEFICIARIES, SPLIT = range(5)
 
 async def add_expense(update: Update, context: CallbackContext):
-    context.user_data["bot_message"] = await update.message.reply_text("What was the expense for?")
+    if update.callback_query:  # Inline button case
+        query = update.callback_query
+        await query.answer()
+        context.user_data["bot_message"] = await query.message.reply_text("What was the expense for?")
+    
+    else:
+        context.user_data["bot_message"] = await update.message.reply_text("What was the expense for?")
     return PURPOSE
 
 async def add_purpose(update: Update, context: CallbackContext):

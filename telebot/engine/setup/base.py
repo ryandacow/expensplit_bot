@@ -47,6 +47,7 @@ async def bot_start(update: Update, context: CallbackContext):
         keyboard = [
             [InlineKeyboardButton("Add Member", callback_data="add_member")],
             [InlineKeyboardButton("Set Currency", callback_data="set_currency")],
+            [InlineKeyboardButton("Add Expense", callback_data="add_expense")],
             [InlineKeyboardButton("Help", callback_data="help")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
