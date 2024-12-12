@@ -91,11 +91,9 @@ from telebot.engine.expense.categorise import(
     update_category,
     expense_category,
     expense_name,
-    add_expense_into_category,
     update_category_cancel,
     EXPENSE,
     CATEGORY,
-    PROCESS_CATEGORY,
 )
 
 # Set up logging
@@ -254,7 +252,6 @@ async def init_application():
     states={
         CATEGORY: [MessageHandler(filters.TEXT & ~filters.COMMAND, expense_category)],
         EXPENSE: [MessageHandler(filters.TEXT & ~filters.COMMAND, expense_name)],
-        PROCESS_CATEGORY: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_expense_into_category)],
     },
     fallbacks=[CommandHandler('cancel', update_category_cancel)],  # Optional: Implement cancel command
     ) 

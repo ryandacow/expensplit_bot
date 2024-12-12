@@ -6,7 +6,7 @@ import psycopg2
 #Create_category, Update_category
 
 CATEGORY_CONFIRMATION = range(1)
-CATEGORY, EXPENSE, PROCESS_CATEGORY = range(3)
+CATEGORY, EXPENSE = range(2)
 
 #Creates a new category
 async def create_category(update: Update, context: CallbackContext):
@@ -99,7 +99,7 @@ async def expense_name(update: Update, context: CallbackContext):
         return EXPENSE
     
     context.user_data["expense"] = expense_name
-    return PROCESS_CATEGORY
+    return await add_expense_into_category
 
 async def add_expense_into_category(update: Update, context: CallbackContext):
     bot_message = await update.message.reply_text("Updating category...")
