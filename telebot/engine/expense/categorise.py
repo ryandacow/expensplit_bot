@@ -99,7 +99,7 @@ async def expense_name(update: Update, context: CallbackContext):
         return EXPENSE
     
     context.user_data["expense"] = expense_name
-    return await add_expense_into_category
+    return await add_expense_into_category(update, context)
 
 async def add_expense_into_category(update: Update, context: CallbackContext):
     bot_message = await update.message.reply_text("Updating category...")
