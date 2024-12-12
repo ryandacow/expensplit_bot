@@ -87,11 +87,14 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
         "/undo: Undoes the latest expense added\n"
         "/show_expenses: Shows expense log\n"
         "/show_balance: Shows balances of individual/all participant(s)\n"
-        "/show_spending: Shows individual/group spending(s) \n"
+        "/show_spending: Shows individual/group spending(s)\n"
         "/settle_all: Resets all balances after being settled\n\n"
         "/set_currency: Sets the currency expenses are tracked in\n"
         "/convert_currency: Converts all balances to SGD\n"
         "/valid_currencies: Shows all currencies that can be set\n\n"
+        "/create_category - Creates a new category.\n"
+        "/show_categories - Shows all categories created.\n"
+        "/update_category - Adds an expense into a category.\n\n"
         "/cancel: Cancels ongoing command (add_expense, settle_all)"
     )
 

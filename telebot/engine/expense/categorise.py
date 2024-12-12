@@ -102,6 +102,8 @@ async def expense_name(update: Update, context: CallbackContext):
     return PROCESS_CATEGORY
 
 async def add_expense_into_category(update: Update, context: CallbackContext):
+    bot_message = await update.message.reply_text("Updating category...")
+
     # Retrieve necessary data from user_data
     group_id = update.message.chat_id
     category_name = context.user_data.get("category")
@@ -123,6 +125,10 @@ async def add_expense_into_category(update: Update, context: CallbackContext):
         await update.message.reply_text(
             f"Expense '{expense_name}' has been successfully updated with the category '{category_name}'."
         )
+
+        if bot_message:
+            await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    
     except Exception as e:
         await update.message.reply_text(f"An error occurred while updating the category: {e}")
     finally:
