@@ -164,7 +164,7 @@ async def spending_individual(update: Update, context: CallbackContext):
         return INDIVIDUAL
     
     context.user_data["member"] = member
-    return spending_process(update, context)
+    return await spending_process(update, context)
 
 async def spending_process(update: Update, context: CallbackContext):
     group_id = update.message.chat_id
