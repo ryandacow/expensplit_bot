@@ -23,7 +23,7 @@ async def name_category(update: Update, context: CallbackContext):
        await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
-    if is_category(group_id, category_name):
+    if await is_category(group_id, category_name):
         await update.message.reply_text("This category already exists.")
         return ConversationHandler.END
 

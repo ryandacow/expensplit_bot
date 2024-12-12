@@ -158,27 +158,28 @@ async def is_expense(group_id, expense):
 
 
 
-#Checks to see if the category exists
-async def is_category(group_id, category_name): 
+async def is_category(group_id, category_name):
     try:
+        # Establish database connection
         connection = connect_to_base()
-        cursor = connection.cursor()
-
-        # Check if the user is in the admin table
-        cursor.execute("""
-        SELECT 1 FROM categories WHERE group_id = %s AND category_name = %s;
-        """, (group_id, category_name))
-
-        # If the participant is already an admin
-        result = cursor.fetchone()
-        cursor.close()
         
-        return result is not None
-    
-    except psycopg2.Error as e:
+        # Use a context manager for the cursor
+        with connection.cursor() as cursor:
+            # Query to check if category exists
+            cursor.execute("""
+            SELECT 1 FROM categories WHERE group_id = %s AND category_name ILIKE %s;
+            """, (group_id, category_name.strip()))  # Ensure no extra spaces
+            
+            result = cursor.fetchone()
+            return result is not None  # True if category exists, False otherwise
+
+    except Exception as e:
+        # Log the error for debugging purposes
         print(f"Error checking category: {e}")
-        return "An error occurred while checking the category."
+        return False  # Default to False if an error occurs
+
     finally:
+        # Ensure the connection is always closed
         if connection:
             connection.close()
 
