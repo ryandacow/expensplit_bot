@@ -127,7 +127,7 @@ async def show_expenses(update: Update, context: CallbackContext):
 
 
 
-CATEGORY, INDIVIDUAL, PROCESS_SPENDING = range(3)
+CATEGORY, INDIVIDUAL = range(2)
 
 async def show_spending(update: Update, context: CallbackContext):
     context.user_data["bot_message"] = await update.message.reply_text("Which category is to be shown? Type 'all' to show all categories.")
@@ -164,7 +164,7 @@ async def spending_individual(update: Update, context: CallbackContext):
         return INDIVIDUAL
     
     context.user_data["member"] = member
-    return PROCESS_SPENDING
+    return spending_process(update, context)
 
 async def spending_process(update: Update, context: CallbackContext):
     group_id = update.message.chat_id

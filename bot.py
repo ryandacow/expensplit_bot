@@ -53,7 +53,6 @@ from telebot.engine.expense.show import(
     show_spending_cancel,
     CATEGORY,
     INDIVIDUAL,
-    PROCESS_SPENDING,
     show_categories
 )
 
@@ -267,7 +266,6 @@ async def init_application():
     states={
         CATEGORY: [MessageHandler(filters.TEXT & ~filters.COMMAND, spending_category)],
         INDIVIDUAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, spending_individual)],
-        PROCESS_SPENDING: [MessageHandler(filters.TEXT & ~filters.COMMAND, spending_process)],
     },
     fallbacks=[CommandHandler('cancel', show_spending_cancel)],  # Optional: Implement cancel command
     ) 
