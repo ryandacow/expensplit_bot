@@ -3,7 +3,7 @@ from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
 from telebot.engine.supabase.data_manager import connect_to_base, is_member, is_expense, is_category
 import psycopg2
 
-#Create_category, Update_category
+#Create_category, Update_category, Show_categories
 
 CATEGORY_CONFIRMATION = range(1)
 CATEGORY, EXPENSE = range(2)
