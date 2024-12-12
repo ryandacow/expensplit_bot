@@ -126,7 +126,6 @@ async def init_application():
 
     application.add_handler(CommandHandler("show_balance", show_balance))
     application.add_handler(CommandHandler("show_expenses", show_expenses))
-    application.add_handler(CommandHandler("show_spending", show_spending))
     application.add_handler(CommandHandler("show_categories", show_categories))
 
     application.add_handler(CommandHandler("add_admin", add_admin))
