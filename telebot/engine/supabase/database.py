@@ -37,12 +37,13 @@ def setup_database():
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS expenses (
             id SERIAL PRIMARY KEY,
-            group_id BIGINT REFERENCES groups(group_id),  -- Group the expense belongs to
-            purpose TEXT,                                 -- Description of the expense
-            payer TEXT,                              -- Username of the payer
-            amount NUMERIC,                               -- Total amount of the expense
-            currency TEXT,                                -- Currency of the expense
-            created_at TIMESTAMP DEFAULT NOW()            -- Timestamp when expense was created
+            group_id BIGINT REFERENCES groups(group_id),               -- Group the expense belongs to
+            purpose TEXT,                                              -- Description of the expense
+            payer TEXT,                                                -- Username of the payer
+            amount NUMERIC,                                            -- Total amount of the expense
+            currency TEXT,                                             -- Currency of the expense
+            category_name TEXT DEFAULT NULL REFERENCES categories(category_name),    -- Reference to the category
+            created_at TIMESTAMP DEFAULT NOW()                                       -- Timestamp when expense was created
         );
         """)
 
@@ -105,6 +106,16 @@ def setup_database():
             group_id BIGINT PRIMARY KEY,        -- Link to the group
             base_currency TEXT DEFAULT 'SGD',   -- Default base currency is SGD
             rate NUMERIC DEFAULT 0.00           -- Default rate is 0.00
+        );
+        """)
+
+        # Create categories table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS categories (
+            group_id BIGINT,                            -- ID of the group
+            category_name TEXT,                         -- Name of the category
+            UNIQUE(group_id, category_name),            -- Ensure unique categories per group
+            PRIMARY KEY (group_id, category_name)       -- Composite primary key
         );
         """)
 

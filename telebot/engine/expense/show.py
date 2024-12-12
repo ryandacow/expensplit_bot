@@ -1,10 +1,11 @@
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
-from telebot.engine.supabase.data_manager import connect_to_base, is_member
+from telebot.engine.supabase.data_manager import connect_to_base, is_member, is_category
 #expenses, balance, participants, admins, settlement_logs
 #from telebot.engine.currency import base_currency
+
 #List of Commands:
-#show_balance, show_expenses, show_spending
+#show_balance, show_expenses, show_spending, show_categories
 
 async def show_balance(update: Update, context: CallbackContext):
     group_id = update.message.chat_id  # Get group ID
@@ -126,52 +127,58 @@ async def show_expenses(update: Update, context: CallbackContext):
 
 
 
+CATEGORY, INDIVIDUAL, PROCESS_SPENDING = range(3)
+
 async def show_spending(update: Update, context: CallbackContext):
+    context.user_data["bot_message"] = await update.message.reply_text("Which category is to be shown? Type 'all' to show all categories.")
+    return CATEGORY
+
+async def spending_category(update: Update, context: CallbackContext):
     group_id = update.message.chat_id
+    category = update.message.text
 
-    #If username is given, show spending of that individual.
-    if context.args:
-        user_name = context.args[0].strip().lower()
+    #Auto delete message
+    bot_message = context.user_data.get("bot_message")
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
-        try:
-            connection = connect_to_base()
-            cursor = connection.cursor()
+    if not is_category(group_id, category):
+        await update.message.reply_text("No such category found. Use /add_category to create a new category.")
+        return CATEGORY
+    
+    context.user_data["category"] = category
+    context.user_data["bot_message"] = await update.message.reply_text("Which member is to be shown? Type 'all' to show all members.")
+    return INDIVIDUAL
 
+async def spending_individual(update: Update, context: CallbackContext):
+    group_id = update.message.chat_id
+    member = update.message.text
+
+    #Auto delete message
+    bot_message = context.user_data.get("bot_message")
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+
+    if not is_member(group_id, member):
+        await update.message.reply_text("No such member found. Use /add_member to add them in.")
+        return INDIVIDUAL
+    
+    context.user_data["member"] = member
+    return PROCESS_SPENDING
+
+async def spending_process(update: Update, context: CallbackContext):
+    group_id = update.message.chat_id
+    input_category = context.user_data["category"]
+    member = context.user_data["member"].strip().lower()
+
+    try:
+        connection = connect_to_base()
+        cursor = connection.cursor()
+
+        #If all categories and all members is given.
+        if input_category == "all" and member == "all":
             cursor.execute("""
-            SELECT username FROM participants WHERE group_id = %s AND username = %s;
-            """, (group_id, user_name))
-            if not cursor.fetchone():
-                await update.message.reply_text(f"{user_name} is not a participant in this group. Use /add_member to add them!")
-                return
-
-            cursor.execute("""
-            SELECT SUM(split_amount) as total_spent
-            FROM expense_beneficiaries
-            WHERE group_id = %s AND username = %s;
-            """, (group_id, user_name))
-            spending_data = cursor.fetchone()
-
-            total_spent = spending_data[0] if spending_data[0] else 0.00
-            await update.message.reply_text(
-                f"*Spending Overview for {user_name}*:\n"
-                f"Total Spent: {total_spent:.2f}",
-                parse_mode="Markdown"
-            )
-        
-        except Exception as e:
-            await update.message.reply_text(f"Error while fetching expenses: {e}")
-        finally:
-            if connection:
-                cursor.close()
-                connection.close()
-
-    if not context.args: 
-        try:
-            connection = connect_to_base()
-            cursor = connection.cursor()
-
-            cursor.execute("""
-            SELECT username, SUM(split_amount) as total_spent
+            SELECT username, SUM(split_amount) AS total_spent
             FROM expense_beneficiaries
             WHERE group_id = %s
             GROUP by username
@@ -181,18 +188,115 @@ async def show_spending(update: Update, context: CallbackContext):
 
             if not total_spending:
                 await update.message.reply_text(f"No spending data found for this group.")
-                return
+                return ConversationHandler.END
 
             spending_text = "*Group Spending Overview:*\n"
             for username, total_spent in total_spending:
                 spending_text += f"{username}: {total_spent:.2f}\n"
 
-            
             await update.message.reply_text(spending_text, parse_mode="Markdown")
+    
+        #If all categories and one member is given.
+        elif input_category == "all" and member != "all":
+            #Fetch spending_data by category
+            cursor.execute("""
+            SELECT COALESCE(e.category_name, 'Others') AS category, SUM(eb.split_amount) AS total_spent
+            FROM expense_beneficiaries eb
+            JOIN expenses e ON eb.expense_id = e.id
+            WHERE eb.group_id = %s AND eb.username = %s
+            GROUP BY e.category_name;
+            """, (group_id, member))
+            spending_data = cursor.fetchall()
 
-        except Exception as e:
-            await update.message.reply_text(f"Error while fetching expenses: {e}")
-        finally:
-            if connection:
-                cursor.close()
-                connection.close()
+            #Fetch total spending
+            cursor.execute("""
+            SELECT SUM(split_amount) AS total_spent
+            FROM expense_beneficiaries
+            WHERE group_id = %s AND username = %s;
+            """, (group_id, member))
+            total_spending = cursor.fetchone()[0] or 0.00
+
+            if not spending_data:
+                await update.message.reply_text(f"No spending data found for {member}.")
+                return ConversationHandler.END
+
+            message = f"*Spending Overview for {member}:*\n\n"
+            message += f"*By Category:*\n"
+            message += "\n".join(f"{category}: {total_spent:.2f}" for category, total_spent in spending_data)
+            message += f"\n\nTotal Spending: {total_spending:.2f}"
+
+            await update.message.reply_text(message,parse_mode="Markdown")
+        
+        #If one category and one member is given.
+        elif input_category != "all" and member != "all":
+            cursor.execute("""
+            SELECT COALESCE(e.category_name, 'Others') AS category, SUM(eb.split_amount) AS total_spent
+            FROM expense_beneficiaries eb
+            JOIN expenses e ON eb.expense_id = e.expense_id
+            WHERE eb.group_id = %s AND eb.username = %s AND e.category_name = %s
+            GROUP BY e.category_name;
+            """, (group_id, member, input_category))
+            spending_data = cursor.fetchone()
+            
+            if spending_data is None or spending_data[1] is None:
+                await update.message.reply_text(
+                    f"No spending data found for {member} in {input_category} category."
+                )
+                return ConversationHandler.END
+
+            category_name, total_spent = spending_data
+            await update.message.reply_text(
+                f"*Spending Overview for {member} in '{category_name}':*\n"
+                f"Total Spent: {total_spent:.2f}",
+                parse_mode="Markdown"
+            )
+
+    except Exception as e:
+        await update.message.reply_text(f"Error while fetching expenses: {e}")
+    finally:
+        if connection:
+            cursor.close()
+            connection.close()
+    return ConversationHandler.END
+
+async def show_spending_cancel(update: Update, context: CallbackContext):
+    await update.message.reply_text("The action to show spending has been cancelled.")
+    return ConversationHandler.END
+
+
+
+#Lists all categories created.    
+async def show_categories(update: Update, context: CallbackContext):
+    """Show the list of categories created."""
+    # Get the group_id from the chat_id
+    group_id = update.message.chat_id
+
+    try:
+        # Connect to the database
+        connection = connect_to_base()
+        cursor = connection.cursor()
+
+        # Retrieve the list of categories for the group
+        cursor.execute("""
+        SELECT category_name FROM categories WHERE group_id = %s;
+        """, (group_id,))
+        
+        # Fetch all the results
+        categories = cursor.fetchall()
+
+        if not categories:
+            await update.message.reply_text("There are no categories created yet.")
+            return
+        
+        # Create a string of all members
+        categories_list = "\n".join([category[0] for category in categories])  # Extracting the username from the tuple
+        
+        # Send the list of members
+        await update.message.reply_text(f"Categories:\n{categories_list}")
+
+    except Exception as e:
+        await update.message.reply_text(f"Error retrieving categories: {e}")
+    
+    finally:
+        if connection:
+            connection.close()

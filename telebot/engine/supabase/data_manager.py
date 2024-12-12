@@ -133,6 +133,56 @@ def remove_participant(group_id, username):
         if connection:
             connection.close()
 
+async def is_expense(group_id, expense):
+    try:
+        connection = connect_to_base()
+        cursor = connection.cursor()
+
+        # Check if the user is in the admin table
+        cursor.execute("""
+        SELECT 1 FROM expenses WHERE group_id = %s AND purpose = %s;
+        """, (group_id, expense))
+
+        # If the participant is already an admin
+        result = cursor.fetchone()
+        cursor.close()
+        
+        return result is not None
+    
+    except psycopg2.Error as e:
+        print(f"Error checking expense: {e}")
+        return "An error occurred while checking for expense."
+    finally:
+        if connection:
+            connection.close()
+
+
+
+#Checks to see if the category exists
+async def is_category(group_id, category_name): 
+    try:
+        connection = connect_to_base()
+        cursor = connection.cursor()
+
+        # Check if the user is in the admin table
+        cursor.execute("""
+        SELECT 1 FROM categories WHERE group_id = %s AND category_name = %s;
+        """, (group_id, category_name))
+
+        # If the participant is already an admin
+        result = cursor.fetchone()
+        cursor.close()
+        
+        return result is not None
+    
+    except psycopg2.Error as e:
+        print(f"Error checking category: {e}")
+        return "An error occurred while checking the category."
+    finally:
+        if connection:
+            connection.close()
+
+
 
 #expenses = [] #track expenses overall
 #balance = {} #track balances of individuals

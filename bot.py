@@ -46,7 +46,15 @@ from telebot.engine.setup.members import(
 from telebot.engine.expense.show import(
     show_expenses, 
     show_balance,
-    show_spending
+    show_spending,
+    spending_category,
+    spending_individual,
+    spending_process,
+    show_spending_cancel,
+    CATEGORY,
+    INDIVIDUAL,
+    PROCESS_SPENDING,
+    show_categories
 )
 
 from telebot.engine.expense.add_expense import(
@@ -75,6 +83,20 @@ from telebot.engine.expense.currency import(
     convert_currency
 )
 
+from telebot.engine.expense.categorise import(
+    create_category,
+    name_category,
+    create_category_cancel,
+    CATEGORY_CONFIRMATION,
+    update_category,
+    expense_category,
+    expense_name,
+    add_expense_into_category,
+    update_category_cancel,
+    EXPENSE,
+    CATEGORY,
+    PROCESS_CATEGORY,
+)
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -107,6 +129,7 @@ async def init_application():
     application.add_handler(CommandHandler("show_balance", show_balance))
     application.add_handler(CommandHandler("show_expenses", show_expenses))
     application.add_handler(CommandHandler("show_spending", show_spending))
+    application.add_handler(CommandHandler("show_categories", show_categories))
 
     application.add_handler(CommandHandler("add_admin", add_admin))
     application.add_handler(CommandHandler("remove_admin", remove_admin))
@@ -116,6 +139,8 @@ async def init_application():
     application.add_handler(CommandHandler("set_currency", set_currency))
     application.add_handler(CommandHandler("valid_currencies", valid_currencies))
     application.add_handler(CommandHandler("convert_currency", convert_currency))
+
+    
 
     #/settle_all command
     settle_all_conv_handler = ConversationHandler(
@@ -131,7 +156,7 @@ async def init_application():
     application.add_handler(settle_all_conv_handler)
 
     #/add_member command
-    add_member_handler = ConversationHandler(
+    add_member_conv_handler = ConversationHandler(
         entry_points=[
             CommandHandler("add_member", add_member),
             CallbackQueryHandler(add_member, pattern="^add_member$"),  # Triggered by inline button
@@ -144,7 +169,7 @@ async def init_application():
         fallbacks=[CommandHandler("cancel", add_member_cancel)],
     ) 
 
-    application.add_handler(add_member_handler)
+    application.add_handler(add_member_conv_handler)
 
     #remove_all_members command
     remove_all_conv_handler = ConversationHandler(
@@ -206,7 +231,52 @@ async def init_application():
 
     application.add_handler(set_currency_handler)
 
+    #/create_category command
+    create_category_conv_handler = ConversationHandler(
+        entry_points=[
+            CommandHandler("create_category", create_category),
+        ],
+        states={
+            CATEGORY_CONFIRMATION: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, name_category),  # Only plain text (not commands)
+            ],
+        },
+        fallbacks=[CommandHandler("cancel", create_category_cancel)],
+    ) 
+
+    application.add_handler(create_category_conv_handler)
+
+    #update_category command
+    update_category_conv_handler = ConversationHandler(
+    entry_points=[
+        CommandHandler('update_category', update_category),
+        ],
+    states={
+        CATEGORY: [MessageHandler(filters.TEXT & ~filters.COMMAND, expense_category)],
+        EXPENSE: [MessageHandler(filters.TEXT & ~filters.COMMAND, expense_name)],
+        PROCESS_CATEGORY: [MessageHandler(filters.TEXT & ~filters.COMMAND, add_expense_into_category)],
+    },
+    fallbacks=[CommandHandler('cancel', update_category_cancel)],  # Optional: Implement cancel command
+    ) 
+
+    application.add_handler(update_category_conv_handler)
+
     logger.info("Telegram Bot Application initialized successfully.")
+
+    #add_expense command
+    show_spending_conv_handler = ConversationHandler(
+    entry_points=[
+        CommandHandler('show_spending', show_spending),
+        ],
+    states={
+        CATEGORY: [MessageHandler(filters.TEXT & ~filters.COMMAND, spending_category)],
+        INDIVIDUAL: [MessageHandler(filters.TEXT & ~filters.COMMAND, spending_individual)],
+        PROCESS_SPENDING: [MessageHandler(filters.TEXT & ~filters.COMMAND, spending_process)],
+    },
+    fallbacks=[CommandHandler('cancel', show_spending_cancel)],  # Optional: Implement cancel command
+    ) 
+
+    application.add_handler(show_spending_conv_handler)
 
 # Ensure the webhook is set correctly
 async def set_webhook():

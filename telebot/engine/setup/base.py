@@ -46,8 +46,8 @@ async def bot_start(update: Update, context: CallbackContext):
 
         keyboard = [
             [InlineKeyboardButton("Add Member", callback_data="add_member")],
-            [InlineKeyboardButton("Set Currency", callback_data="set_currency")],
             [InlineKeyboardButton("Add Expense", callback_data="add_expense")],
+            [InlineKeyboardButton("Set Currency", callback_data="set_currency")],
             [InlineKeyboardButton("Help", callback_data="help")]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
@@ -58,9 +58,10 @@ async def bot_start(update: Update, context: CallbackContext):
             "Then use Set Currency to set the base currency of the tracker.\n"
             "You may then proceed to Add Expense!\n\n"
             "You can also use /help to show a list of common commands.\n\n"
-            "DISCLAIMERS: DO NOT USE /convert_currency until the end of the trip.\n"
-            "Please give the bot up to one minute to respond as it takes time for the server to boot.\n\n"
-            "Please enjoy using ExpenSplit! :D",
+            "DISCLAIMERS:\n"
+            "- DO NOT USE /convert_currency until the end of the trip.\n"
+            "- Please give the bot up to one minute to respond as it takes time for the server to boot.\n\n"
+            "Enjoy using ExpenSplit! :D",
             reply_markup=reply_markup
         )
 
