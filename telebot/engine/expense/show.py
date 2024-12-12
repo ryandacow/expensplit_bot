@@ -142,7 +142,7 @@ async def spending_category(update: Update, context: CallbackContext):
     await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
-    if not is_category(group_id, category):
+    if category != "all" and not await is_category(group_id, category):
         await update.message.reply_text("No such category found. Use /add_category to create a new category.")
         return CATEGORY
     
@@ -159,7 +159,7 @@ async def spending_individual(update: Update, context: CallbackContext):
     await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
-    if not is_member(group_id, member):
+    if member != "all" and not await is_member(group_id, member):
         await update.message.reply_text("No such member found. Use /add_member to add them in.")
         return INDIVIDUAL
     

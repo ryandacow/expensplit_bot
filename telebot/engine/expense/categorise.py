@@ -49,10 +49,12 @@ async def name_category(update: Update, context: CallbackContext):
         if connection:
             connection.close()
 
+    await update.message.reply_text(f"{category_name} has been created.")
+
     return ConversationHandler.END
 
 async def create_category_cancel(update: Update, context: CallbackContext):
-    await update.message.reply_text("The action to add member has been cancelled.")
+    await update.message.reply_text("The action to create category has been cancelled.")
     return ConversationHandler.END
 
 
@@ -74,7 +76,7 @@ async def expense_category(update: Update, context: CallbackContext):
     group_id = update.message.chat_id
     category_name = update.message.text
 
-    if not is_category(group_id, category_name):
+    if not await is_category(group_id, category_name):
         await update.message.reply_text("No such category found. Please try again.")
         return CATEGORY
 
@@ -92,7 +94,7 @@ async def expense_name(update: Update, context: CallbackContext):
     group_id = update.message.chat_id
     expense_name = update.message.text
 
-    if not is_expense(group_id, expense_name):
+    if not await is_expense(group_id, expense_name):
         await update.message.reply_text("No such expense found. Please try again.")
         return EXPENSE
     
