@@ -49,7 +49,6 @@ from telebot.engine.expense.show import(
     show_spending,
     spending_category,
     spending_individual,
-    spending_process,
     show_spending_cancel,
     CATEGORY,
     INDIVIDUAL,

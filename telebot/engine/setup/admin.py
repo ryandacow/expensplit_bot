@@ -188,6 +188,11 @@ async def delete_all_confirm(update: Update, context: CallbackContext):
             DELETE FROM currency WHERE group_id = %s;
             """, (group_id,))
 
+            # Delete from categories table
+            cursor.execute("""
+            DELETE FROM categories WHERE group_id = %s;
+            """, (group_id,))
+
             # Commit the transaction
             connection.commit()
             
