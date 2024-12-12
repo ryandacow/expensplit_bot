@@ -159,7 +159,7 @@ async def spending_individual(update: Update, context: CallbackContext):
     await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
-    if member != "all" and not await is_member(group_id, member):
+    if member != "all" and not is_member(group_id, member):
         await update.message.reply_text("No such member found. Use /add_member to add them in.")
         return INDIVIDUAL
     
