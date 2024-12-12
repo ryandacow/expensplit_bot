@@ -19,7 +19,8 @@ async def name_category(update: Update, context: CallbackContext):
 
     #Auto delete message
     bot_message = context.user_data.get("bot_message")
-    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    if bot_message:
+       await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     if is_category(group_id, category_name):
@@ -66,7 +67,8 @@ async def update_category(update: Update, context: CallbackContext):
 async def expense_category(update: Update, context: CallbackContext):
     #Auto delete message
     bot_message = context.user_data.get("bot_message")
-    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    if bot_message:
+       await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     group_id = update.message.chat_id
@@ -83,7 +85,8 @@ async def expense_category(update: Update, context: CallbackContext):
 async def expense_name(update: Update, context: CallbackContext):
     #Auto delete message
     bot_message = context.user_data.get("bot_message")
-    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    if bot_message:
+        await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     group_id = update.message.chat_id

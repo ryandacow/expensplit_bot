@@ -117,13 +117,15 @@ async def add_split(update: Update, context: CallbackContext):
 
     if all_beneficiary_message:
         await context.bot.deleteMessage(chat_id=all_beneficiary_message.chat_id, message_id=all_beneficiary_message.message_id)
-    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    if bot_message:
+        await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
-    #If amount is to be split equally.
     split_text = update.message.text.strip()
+
+    #If amount is to be split equally.
     if update.message.text.strip() == "equal":
-        split_amount = round(context.user_data["amount"] / context.user_data["beneficiaries"], 2)
+        split_amount = round(context.user_data["amount"] / len(context.user_data["beneficiaries"]), 2)
         context.user_data["split_amounts"] = [split_amount] * len(context.user_data["beneficiaries"])
         return await process_expense(update, context)
     
@@ -216,6 +218,8 @@ async def add_expense_cancel(update: Update, context: CallbackContext):
     """Cancel the add_expense conversation."""
     await update.message.reply_text("Expense adding has been cancelled.")
     return ConversationHandler.END
+
+
 
 async def undo(update: Update, context: CallbackContext):
     group_id = update.message.chat_id

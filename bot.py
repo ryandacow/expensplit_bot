@@ -263,7 +263,7 @@ async def init_application():
 
     logger.info("Telegram Bot Application initialized successfully.")
 
-    #add_expense command
+    #show_spending command
     show_spending_conv_handler = ConversationHandler(
     entry_points=[
         CommandHandler('show_spending', show_spending),
