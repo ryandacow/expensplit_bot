@@ -1,9 +1,11 @@
-from telegram import Update
+from telegram import Update, InputFile
 from telegram.ext import CommandHandler, CallbackContext, ConversationHandler
-import psycopg2
+import psycopg2, os
+import pandas as pd
 from psycopg2 import sql
-import os
 from telebot.engine.supabase.database import connect_to_base
+
+#is_member, is_admin, is_expense, is_category, add_group, add_participant, remove_participant, fetch_expenses
 
 def is_member(group_id, username):
     try:
@@ -183,6 +185,67 @@ async def is_category(group_id, category_name):
         if connection:
             connection.close()
 
+
+
+async def export_expenses(update: Update, context: CallbackContext):
+    group_id = update.message.chat_id
+    group_name = update.message.chat.title.strip(" ", "_")
+
+    try:
+        connection = connect_to_base()
+        cursor = connection.cursor()
+
+        cursor.execute("""
+        SELECT 
+            e.id AS expense_id, 
+            e.purpose,
+            e.amount,
+            e.currency,
+            e.payer,
+            eb.username,
+            eb.split_amount
+        FROM expenses e
+        JOIN expense_beneficiaries eb ON e.id = eb.expense_id
+        WHERE group_id = %s;
+        """, (group_id,))
+
+        data = cursor.fetchall()
+        columns = [desc[0] for desc in cursor.description]
+
+        #Create a DataFrame
+        df = pd.DataFrame(data, columns=columns)
+        
+        #Sequential numbers for expense_id
+        df["expense_id"] = pd.factorize(df["expense_id"])[0] + 1
+
+        #Reorder to have expense_id column first
+        df = df[["expense_id"] + [col for col in columns if col != "expense_id"]]
+
+        #Save as csv
+        file_path = f"/tmp/{group_name}_expenses.csv"
+        df.to_csv(file_path, index=False)
+
+        #Return to user
+        with open(file_path, "rb") as file:
+            await update.message.reply_document(
+                document=InputFile(file),
+                filename=f"{group_name}_expenses.csv",
+                caption="Here is the exported expense data for your group.",
+                parse_mode="Markdown"
+            )
+
+        os.remove(file_path)
+
+    except Exception as e:
+        # Log and notify user of error
+        print(f"Error exporting expenses: {e}")
+        await update.message.reply_text("An error occurred while exporting expenses. Please try again.")
+
+    finally:
+        # Ensure the connection is always closed
+        if connection:
+            cursor.close()
+            connection.close()
 
 
 #expenses = [] #track expenses overall

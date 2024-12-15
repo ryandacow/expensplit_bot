@@ -3,6 +3,7 @@ from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, CallbackContext, ConversationHandler, filters, MessageHandler, CallbackQueryHandler
 from telebot.credentials import BOT_TOKEN
 from telebot.engine.supabase.database import setup_database
+from telebot.engine.supabase.data_manager import export_expenses
 import os
 import requests
 import asyncio
@@ -134,6 +135,8 @@ async def init_application():
     application.add_handler(CommandHandler("set_currency", set_currency))
     application.add_handler(CommandHandler("valid_currencies", valid_currencies))
     application.add_handler(CommandHandler("convert_currency", convert_currency))
+
+    application.add_handler(CommandHandler("export_expenses", export_expenses))
 
     
 

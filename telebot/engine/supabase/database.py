@@ -5,6 +5,7 @@ from psycopg2 import sql
 import os
 from telebot.credentials import SUPABASE_API_KEY, SUPABASE_DB_HOST, SUPABASE_DB_NAME, SUPABASE_DB_PASSWORD, SUPABASE_DB_USER, SUPABASE_URL
 
+#General Connection to SupabaseDB
 def connect_to_base():
     try:
         connection = psycopg2.connect(
@@ -15,10 +16,14 @@ def connect_to_base():
             port=6543                 # Default PostgreSQL port
         )
         return connection
+    
     except psycopg2.Error as e:
         print(f"Error connecting to the database: {e}")
         return None
+    
+    
 
+#Creation of database tables for a new group
 def setup_database():
     """Set up the database tables."""
     connection = connect_to_base()
