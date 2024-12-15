@@ -209,7 +209,7 @@ async def export_expenses(update: Update, context: CallbackContext):
             eb.split_amount
         FROM expenses e
         JOIN expense_beneficiaries eb ON e.id = eb.expense_id
-        WHERE group_id = %s;
+        WHERE eb.group_id = %s;
         """, (group_id,))
 
         data = cursor.fetchall()
