@@ -95,6 +95,7 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
         "/create_category - Creates a new category.\n"
         "/show_categories - Shows all categories created.\n"
         "/update_category - Adds an expense into a category.\n\n"
+        "/export_expenses - Exports expenses as a CSV file.\n\n"
         "/cancel: Cancels ongoing command (add_expense, settle_all)"
     )
 
