@@ -5,7 +5,7 @@ import pandas as pd
 from psycopg2 import sql
 from telebot.engine.supabase.database import connect_to_base
 
-#is_member, is_admin, is_expense, is_category, add_group, add_participant, remove_participant, fetch_expenses
+#is_member, is_admin, is_expense, is_category, add_group, add_participant, remove_participant, export_expenses
 
 def is_member(group_id, username):
     try:
