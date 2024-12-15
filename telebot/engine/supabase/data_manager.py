@@ -189,7 +189,10 @@ async def is_category(group_id, category_name):
 
 async def export_expenses(update: Update, context: CallbackContext):
     group_id = update.message.chat_id
-    group_name = update.message.chat.title.strip(" ", "_")
+    if update.message.chat == "group":
+        group_name = update.message.chat.title.strip(" ", "_") if update.message.chat.title else "exported"
+    else:
+        group_name = update.message.chat.username if update.message.chat.username else "exported"
 
     try:
         connection = connect_to_base()
