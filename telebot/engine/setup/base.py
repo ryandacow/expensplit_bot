@@ -22,7 +22,7 @@ async def bot_start(update: Update, context: CallbackContext):
         cursor.execute("""
         INSERT INTO groups (group_id, username)
         VALUES (%s, %s)
-        ON CONFLICT(group_id, username) DO NOTHING;
+        ON CONFLICT(group_id) DO NOTHING;
         """, (group_id, username))
 
         print(f"group {group_id} created by {username}")
