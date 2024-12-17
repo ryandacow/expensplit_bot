@@ -144,7 +144,7 @@ async def add_split(update: Update, context: CallbackContext):
         return await process_expense(update, context)
     
     except ValueError:
-        await update.message.reply_text("Invalid amount inputted. Please enter valid numbers to be split.")
+        context.user_data["bot_message"] = await update.message.reply_text("Invalid amount inputted. Please enter valid numbers to be split.")
         return SPLIT
 
 async def process_expense(update: Update, context: CallbackContext):
