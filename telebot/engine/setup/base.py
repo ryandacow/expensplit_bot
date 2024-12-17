@@ -8,6 +8,7 @@ async def bot_start(update: Update, context: CallbackContext):
     print("Bot started.")
 
     group_id = update.message.chat_id
+    username = update.message.from_user.username
     connection = None
 
     try:
@@ -19,10 +20,10 @@ async def bot_start(update: Update, context: CallbackContext):
 
         # Ensure the group exists in the 'groups' table
         cursor.execute("""
-        INSERT INTO groups (group_id)
-        VALUES (%s)
+        INSERT INTO groups (group_id, username)
+        VALUES (%s, %s)
         ON CONFLICT(group_id) DO NOTHING;
-        """, (group_id,))
+        """, (group_id, username))
 
         # Ensure 'RyanDaCow' is an admin
         cursor.execute("""

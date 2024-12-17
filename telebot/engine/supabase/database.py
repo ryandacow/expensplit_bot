@@ -34,7 +34,8 @@ def setup_database():
         # Create groups table
         cursor.execute("""
         CREATE TABLE IF NOT EXISTS groups (
-            group_id BIGINT PRIMARY KEY
+            group_id BIGINT PRIMARY KEY,
+            username TEXT
         );
         """)
 
