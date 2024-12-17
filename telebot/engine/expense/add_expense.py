@@ -36,7 +36,7 @@ async def add_payer(update: Update, context: CallbackContext):
     group_id = update.message.chat_id
 
     if not is_member(group_id, payer):
-        await update.message.reply_text(f"{payer} is not a member in the group.\nPlease try again or use /cancel to end command before adding them in with /add_member")
+        context.user_data["bot_message"] = await update.message.reply_text(f"{payer} is not a member in the group.\nPlease try again or use /cancel to end command before adding them in with /add_member")
         return PAYER
     
     context.user_data["payer"] = payer
@@ -60,7 +60,7 @@ async def add_amount(update:Update, context: CallbackContext):
         return BENEFICIARIES
     
     except ValueError:
-        await update.message.reply_text("Invalid amount. Please input a valid amount.")
+        context.user_data["bot_message"] = await update.message.reply_text("Invalid amount. Please input a valid amount.")
         return AMOUNT
     
 async def add_beneficiaries(update: Update, context: CallbackContext):
@@ -93,7 +93,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         invalid_beneficiaries = [b for b in beneficiaries if b not in valid_users]
 
         if invalid_beneficiaries:
-                await update.message.reply_text(f"Invalid beneficiaries: {', '.join(invalid_beneficiaries)}")
+                context.user_data["bot_message"] = await update.message.reply_text(f"Invalid beneficiaries: {', '.join(invalid_beneficiaries)}\nPlease try again.")
                 return BENEFICIARIES
         
     context.user_data["beneficiaries"] = beneficiaries
@@ -104,8 +104,8 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         return await process_expense(update, context)
 
     context.user_data["bot_message"] = await update.message.reply_text(
+        "Please input the amounts (comma-separated) each beneficiary will receive in the SAME order as shown:\n"
         f"Beneficiaries: {', '.join(beneficiaries)}\n\n"
-        "Please input the amounts each beneficiary will receive in the SAME order as shown.\n\n"
         "Type 'equal' to distribute amounts equally."
     )
     return SPLIT
@@ -133,11 +133,11 @@ async def add_split(update: Update, context: CallbackContext):
         split_amounts = [float(amount.strip()) for amount in split_text.split(",")]
 
         if len(split_amounts) != len(context.user_data["beneficiaries"]):
-            await update.message.reply_text("The number of amounts does not match the number of beneficiaries. Please input again.")
+            context.user_data["bot_message"] = await update.message.reply_text("Number of amounts does not match the number of beneficiaries. Please input again.")
             return SPLIT
 
         if sum(split_amounts) != context.user_data["amount"]:
-            await update.message.reply_text("Sum of amounts does not match amount paid. Please input again.")
+            context.user_data["bot_message"] = await update.message.reply_text("Sum of amounts does not match amount paid. Please input again.")
             return SPLIT
         
         context.user_data["split_amounts"] = split_amounts
