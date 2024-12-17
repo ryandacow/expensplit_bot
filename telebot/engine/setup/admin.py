@@ -156,6 +156,11 @@ async def delete_all_confirm(update: Update, context: CallbackContext):
 
             # Begin a transaction
             cursor.execute("BEGIN;")
+
+            # Delete from groups (group_id and username)
+            cursor.execute("""
+            DELETE FROM groups WHERE group_id = %s;
+            """, (group_id,))
             
             # Delete from expense_beneficiaries (expenses related to the group)
             cursor.execute("""
