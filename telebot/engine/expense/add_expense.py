@@ -203,7 +203,8 @@ async def process_expense(update: Update, context: CallbackContext):
             f"Purpose: {purpose}\n"
             f"Amount: {currency}{amount_paid:.2f}\n"
             f"Payer: {payer}\n"
-            f"Beneficiaries and Splits: {beneficiaries_splits_text}\n"
+            f"Beneficiaries and Splits: {beneficiaries_splits_text}\n\n"
+            "Use /show_expenses or /show_balance to see expense log or balances respectively!"
         )
 
     except Exception as e:
