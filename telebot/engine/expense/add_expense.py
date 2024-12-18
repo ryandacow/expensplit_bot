@@ -116,7 +116,11 @@ async def add_split(update: Update, context: CallbackContext):
     all_beneficiary_message = context.user_data.get("all_beneficiary_message")
 
     if all_beneficiary_message:
-        await context.bot.deleteMessage(chat_id=all_beneficiary_message.chat_id, message_id=all_beneficiary_message.message_id)
+        try:
+            await context.bot.deleteMessage(chat_id=all_beneficiary_message.chat_id, message_id=all_beneficiary_message.message_id)
+        except:
+            pass
+
     if bot_message:
         await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
