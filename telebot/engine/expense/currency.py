@@ -111,7 +111,7 @@ async def find_currency(update: Update, context: CallbackContext):
                 return
 
             for username, balance in participants_balances:
-                updated_balance = round((balance/old_rate) * new_rate, 2)
+                updated_balance = round(float(balance/old_rate) * new_rate, 2)
 
                 # Update the balance for each user
                 cursor.execute("""
