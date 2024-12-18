@@ -62,8 +62,9 @@ async def bot_start(update: Update, context: CallbackContext):
             "You may then proceed to Add Expense!\n\n"
             "You can also use /help to show a list of common commands.\n\n"
             "DISCLAIMERS:\n"
-            "- DO NOT USE /convert_currency until the end of the trip.\n"
             "- Please give the bot up to one minute to respond as it takes time for the server to boot.\n\n"
+            "- Currently, the bot only supports up to one trip of inputs. If you would like to track expenses for a separate trip, please let RyanDaCow know so he can reset the data for you!\n\n"
+            "- Certain higher-risk commands (like resetting of tracker) are only accessible by admins. Please let RyanDaCow know if you'd like admin rights!\n\n"
             "Enjoy using ExpenSplit! :D",
             reply_markup=reply_markup
         )
@@ -73,6 +74,7 @@ async def bot_start(update: Update, context: CallbackContext):
             connection.rollback()  # Rollback in case of error
         print(f"Error during bot initialization: {e}")
         await update.message.reply_text("An error occurred during initialization. Please try again.")
+    
     finally:
         if connection:
             cursor.close()
@@ -92,8 +94,7 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
         "/show_balance: Shows balances of individual/all participant(s)\n"
         "/show_spending: Shows individual/group spending(s)\n"
         "/settle_all: Resets all balances after being settled\n\n"
-        "/set_currency: Sets the currency expenses are tracked in\n"
-        "/convert_currency: Converts all balances to SGD\n"
+        "/set_currency: Sets the currency expenses are tracked in and updates balance accordingly\n"
         "/valid_currencies: Shows all currencies that can be set\n\n"
         "/create_category - Creates a new category.\n"
         "/show_categories - Shows all categories created.\n"
