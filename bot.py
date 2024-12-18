@@ -79,7 +79,7 @@ from telebot.engine.expense.currency import(
     CURRENCY_CONFIRMATION,
     valid_currencies,
     show_currency,
-    convert_currency
+    #convert_currency
 )
 
 from telebot.engine.expense.categorise import(
@@ -134,7 +134,7 @@ async def init_application():
     application.add_handler(CommandHandler("show_currency", show_currency))
     #application.add_handler(CommandHandler("set_currency", set_currency))
     application.add_handler(CommandHandler("valid_currencies", valid_currencies))
-    application.add_handler(CommandHandler("convert_currency", convert_currency))
+    #application.add_handler(CommandHandler("convert_currency", convert_currency))
 
     application.add_handler(CommandHandler("export_expenses", export_expenses))
 
