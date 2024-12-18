@@ -132,7 +132,7 @@ async def init_application():
     application.add_handler(CommandHandler("show_admins", show_admins))
 
     application.add_handler(CommandHandler("show_currency", show_currency))
-    application.add_handler(CommandHandler("set_currency", set_currency))
+    #application.add_handler(CommandHandler("set_currency", set_currency))
     application.add_handler(CommandHandler("valid_currencies", valid_currencies))
     application.add_handler(CommandHandler("convert_currency", convert_currency))
 

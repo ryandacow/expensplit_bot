@@ -108,6 +108,8 @@ async def set_currency_cancel(update: Update, context: CallbackContext):
     await update.message.reply_text("The action to set currency has been cancelled.")
     return ConversationHandler.END
 
+
+
 async def valid_currencies(update: Update, context: CallbackContext):
     await update.message.reply_text(
         f"You can find the list of supported currencies here:\nhttps://www.exchangerate-api.com/docs/supported-currencies"
