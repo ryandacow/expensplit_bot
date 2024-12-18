@@ -75,6 +75,15 @@ async def find_currency(update: Update, context: CallbackContext):
             connection = connect_to_base()
             cursor = connection.cursor()
 
+           # Retrieve old currency and old rate for balance conversion
+            cursor.execute("""
+            SELECT base_currency, rate
+            FROM currency
+            WHERE group_id = %s
+            """, (group_id,))
+
+            old_currency, old_rate = cursor.fetchone() 
+
            # Update the currency table with the new base currency and rate
             cursor.execute("""
             INSERT INTO currency (group_id, base_currency, rate)
@@ -83,27 +92,63 @@ async def find_currency(update: Update, context: CallbackContext):
             SET base_currency = %s, rate = %s;
             """, (group_id, new_currency, new_rate, new_currency, new_rate))
 
+           # Update balances
+            cursor.execute("""
+            SELECT participants.username, balances.balance 
+            FROM balances 
+            JOIN participants ON balances.username = participants.username 
+            WHERE balances.group_id = %s;
+            """, (group_id,))
+
+            participants_balances = cursor.fetchall()
+
+            # If no expenses have been inputted or if there are no members.
+            if not participants_balances:
+                await update.message.reply_text(
+                f"Base currency has been set to {new_currency}, but there are no balances to convert."
+            )
+                connection.commit()
+                return
+
+            for username, balance in participants_balances:
+                updated_balance = round((balance/old_rate) * new_rate, 2)
+
+                # Update the balance for each user
+                cursor.execute("""
+                UPDATE balances 
+                SET balance = %s 
+                WHERE group_id = %s AND username = %s;
+                """, (updated_balance, group_id, username))
+
             # Commit the changes
             connection.commit()
 
             # Send confirmation message
             await update.message.reply_text(
-                f"Base currency has been set to {new_currency}. Current rate: 1 SGD = {new_rate} {new_currency}."
+                f"Base currency has been set to {new_currency}. Current rate: 1 SGD = {new_rate} {new_currency}.\n\n"
+                f"All balances have been converted from {old_currency} to {new_currency}."
             )
-
-             # Clean up resources
-            cursor.close()
-            connection.close()
 
         else:
             await update.message.reply_text(
                 f"{new_currency} is not supported. Use /valid_currencies to see all supported currencies."
             )
+
+    # Error handling
     except requests.exceptions.RequestException as e:
         await update.message.reply_text(f"Failed to fetch currency rates: {e}")
+    except Exception as e:
+        await update.message.reply_text(f"An error occurred: {e}")
+
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
 
     return ConversationHandler.END
     
+
 async def set_currency_cancel(update: Update, context: CallbackContext):
     await update.message.reply_text("The action to set currency has been cancelled.")
     return ConversationHandler.END
@@ -117,106 +162,74 @@ async def valid_currencies(update: Update, context: CallbackContext):
 
 
 
-async def convert_currency(update: Update, context: CallbackContext):
-    group_id = update.message.chat_id  # Get the group ID from the chat
+#async def convert_currency(update: Update, context: CallbackContext):
+    #group_id = update.message.chat_id  # Get the group ID from the chat
 
-    try:
+    #try:
         # Connect to the database
-        connection = connect_to_base()
-        cursor = connection.cursor()
+        #connection = connect_to_base()
+        #cursor = connection.cursor()
 
         # Fetch the current base_currency and rate for the group
-        cursor.execute("""
-        SELECT base_currency, rate FROM currency WHERE group_id = %s;
-        """, (group_id,))
-        result = cursor.fetchone()
+        #cursor.execute("""
+        #SELECT base_currency, rate FROM currency WHERE group_id = %s;
+        #""", (group_id,))
+        #result = cursor.fetchone()
 
-        if result is None:
-            await update.message.reply_text(
-                "Currency settings for this group are not set. Use /set_currency to set a base currency."
-            )
-            return
+        #if result is None:
+            #await update.message.reply_text(
+                #"Currency settings for this group are not set. Use /set_currency to set a base currency."
+            #)
+            #return
 
-        base_currency, rate = result
+        #base_currency, rate = result
 
-        if base_currency == "SGD":
-            await update.message.reply_text("The base currency is already SGD; no conversion is needed.")
-            return
+        #if base_currency == "SGD":
+            #await update.message.reply_text("The base currency is already SGD; no conversion is needed.")
+            #return
 
         # Check if a specific user is mentioned
-        if context.args:
-            user = context.args[0].strip().lower()
+        #if context.args:
+            #user = context.args[0].strip().lower()
 
-            if not is_member(group_id, user):
-                await update.message.reply_text(
-                    f"{context.args[0]} is not a member in the group. Use /add_member to add them in."
-                )
-                return
+            #if not is_member(group_id, user):
+                #await update.message.reply_text(
+                    #f"{context.args[0]} is not a member in the group. Use /add_member to add them in."
+                #)
+                #return
 
             # Fetch and convert the balance for the specific user
-            cursor.execute("""
-            SELECT balances.balance 
-            FROM balances 
-            JOIN participants ON balances.username = participants.username 
-            WHERE balances.group_id = %s AND participants.username = %s;
-            """, (group_id, user))
-            result = cursor.fetchone()
+            #cursor.execute("""
+            #SELECT balances.balance 
+            #FROM balances 
+            #JOIN participants ON balances.username = participants.username 
+            #WHERE balances.group_id = %s AND participants.username = %s;
+            #""", (group_id, user))
+            #result = cursor.fetchone()
 
-            if result:
-                balance = result[0]
-                updated_balance = round(balance / rate, 2)
+            #if result:
+                #balance = result[0]
+                #updated_balance = round(balance / rate, 2)
 
                 # Update the balance for the user
-                cursor.execute("""
-                UPDATE balances 
-                SET balance = %s 
-                WHERE group_id = %s AND username = %s;
-                """, (updated_balance, group_id, user))
+                #cursor.execute("""
+                #UPDATE balances 
+                #SET balance = %s 
+                #WHERE group_id = %s AND username = %s;
+                #""", (updated_balance, group_id, user))
 
-                await update.message.reply_text(
-                    f"{user}'s balance has been converted from {base_currency} to SGD (New Balance: SGD {updated_balance:.2f})."
-                )
-            else:
-                await update.message.reply_text(f"{user} does not have a recorded balance.")
-        else:
-            # Fetch and convert balances for all users in the group
-            cursor.execute("""
-            SELECT participants.username, balances.balance 
-            FROM balances 
-            JOIN participants ON balances.username = participants.username 
-            WHERE balances.group_id = %s;
-            """, (group_id,))
-            participants_balances = cursor.fetchall()
-
-            if not participants_balances:
-                await update.message.reply_text("No balances found to convert.")
-                return
-
-            for username, balance in participants_balances:
-                updated_balance = round(balance / rate, 2)
-
-                # Update the balance for each user
-                cursor.execute("""
-                UPDATE balances 
-                SET balance = %s 
-                WHERE group_id = %s AND username = %s;
-                """, (updated_balance, group_id, username))
-
-            await update.message.reply_text(
-                f"All balances have been converted from {base_currency} to SGD."
-            )
-
-        # Update the currency table to set base_currency to SGD and rate to 1.0
-        cursor.execute("""
-        UPDATE currency SET base_currency = 'SGD', rate = 1.0 WHERE group_id = %s;
-        """, (group_id,))
+                #await update.message.reply_text(
+                    #f"{user}'s balance has been converted from {base_currency} to SGD (New Balance: SGD {updated_balance:.2f})."
+                #)
+            #else:
+                #await update.message.reply_text(f"{user} does not have a recorded balance.")
 
         # Commit the changes
-        connection.commit()
+        #connection.commit()
 
-    except Exception as e:
-        await update.message.reply_text(f"Error while converting currency: {e}")
+    #except Exception as e:
+        #await update.message.reply_text(f"Error while converting currency: {e}")
 
-    finally:
-        cursor.close()
-        connection.close()
+    #finally:
+        #cursor.close()
+        #connection.close()
