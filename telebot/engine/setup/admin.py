@@ -130,26 +130,55 @@ def remove_power(group_id, username):
         if connection:
             connection.close()
 
-DELETE_ALL_CONFIRMATION = range(1)
+DELETE_ALL_GIVE_PASSWORD, DELETE_ALL_CONFIRMATION = range(2)
 
 async def delete_all_start(update: Update, context: CallbackContext):
     user = update.message.from_user.username
     group_id = update.message.chat_id
 
     if not is_admin(group_id, user):
-        await update.message.reply_text(f"{user} is not authorised to perform this action. Get an admin to authorise you first.")
-        return ConversationHandler.END
+        context.user_data["bot_message"] = await update.message.reply_text(
+            f"{user} is not authorised to perform this action. Please input the password."
+        )
+        return DELETE_ALL_GIVE_PASSWORD
     
-    await update.message.reply_text(
-        "Are you sure you want to delete all data? This cannot be undone.\nReply with 'yes' or 'no'."
+    context.user_data["bot_message"] =  await update.message.reply_text(
+        "Are you sure you want to delete all data? This cannot be undone.\n"
+        "Reply with 'yes' or 'no'."
     )
 
     return DELETE_ALL_CONFIRMATION
 
+async def delete_all_password(update: Update, context: CallbackContext):
+    password = update.message.text
+
+    bot_message = context.user_data.get("bot_message")
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+
+    if password == "123456":
+        context.user_data["bot_message"] =  await update.message.reply_text(
+            "Valid password.\n"
+            "Are you sure you want to delete all data? This cannot be undone.\n"
+            "Reply with 'yes' or 'no'."
+        )
+        return DELETE_ALL_CONFIRMATION
+    
+    else:
+        await update.message.reply_text(
+            "Invalid password. Ending data deletion."
+        )
+        return ConversationHandler.END
+
 async def delete_all_confirm(update: Update, context: CallbackContext):
     group_id = update.message.chat_id
+    confirmation = update.message.text
 
-    if update.message.text.lower() == "yes":
+    bot_message = context.user_data.get("bot_message")
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+
+    if confirmation == "yes":
         try:
             connection = connect_to_base()
             cursor = connection.cursor()

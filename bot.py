@@ -19,8 +19,10 @@ from telebot.engine.setup.admin import (
     remove_admin,
     show_admins,
     delete_all_start,
+    delete_all_password,
     delete_all_confirm,
     delete_all_cancel,
+    DELETE_ALL_GIVE_PASSWORD,
     DELETE_ALL_CONFIRMATION
 )
 
@@ -186,9 +188,9 @@ async def init_application():
     delete_all_conv_handler = ConversationHandler(
         entry_points=[CommandHandler("delete_all", delete_all_start)],
         states={
-            DELETE_ALL_CONFIRMATION: [
-                MessageHandler(filters.TEXT & ~filters.COMMAND, delete_all_confirm),  # Only plain text (not commands)
-            ],
+            DELETE_ALL_GIVE_PASSWORD: [MessageHandler(filters.TEXT & ~filters.COMMAND, delete_all_password)],
+
+            DELETE_ALL_CONFIRMATION: [MessageHandler(filters.TEXT & ~filters.COMMAND, delete_all_confirm)],  # Only plain text (not commands)
         },
         fallbacks=[CommandHandler("cancel", delete_all_cancel)],
     ) 
