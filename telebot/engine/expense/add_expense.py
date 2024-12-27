@@ -18,13 +18,13 @@ async def add_expense(update: Update, context: CallbackContext):
 
 async def add_purpose(update: Update, context: CallbackContext):
     context.user_data["purpose"] = update.message.text
-    context.user_data["bot_message"] = await update.message.reply_text("Who paid?")
     
     #Auto delete message
     bot_message = context.user_data.get("bot_message")
     await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
-    
+
+    context.user_data["bot_message"] = await update.message.reply_text("Who paid?")
     return PAYER
 
 async def add_payer(update: Update, context: CallbackContext):
@@ -45,13 +45,15 @@ async def add_payer(update: Update, context: CallbackContext):
     return AMOUNT
 
 async def add_amount(update:Update, context: CallbackContext):
+    amount = update.message.text
+
     #Auto delete message
     bot_message = context.user_data.get("bot_message")
     await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     try:
-        amount = float(update.message.text)
+        amount = float(amount)
         if amount <= 0:
             await update.message.reply_text("Amount must be greater than 0. Please input a valid amount.")
             return AMOUNT
@@ -65,13 +67,13 @@ async def add_amount(update:Update, context: CallbackContext):
         return AMOUNT
     
 async def add_beneficiaries(update: Update, context: CallbackContext):
+    beneficiaries_text = update.message.text.strip()
+    group_id = update.message.chat_id
+
     #Auto delete message
     bot_message = context.user_data.get("bot_message")
     await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
-
-    beneficiaries_text = update.message.text.strip()
-    group_id = update.message.chat_id
 
     connection = connect_to_base()
     cursor = connection.cursor()
