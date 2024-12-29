@@ -36,6 +36,8 @@ async def show_currency(update: Update, context: CallbackContext):
         if connection:
             connection.close()
    
+
+
 CURRENCY_CONFIRMATION = range(1)
 
 async def set_currency(update: Update, context: CallbackContext):
@@ -45,7 +47,7 @@ async def set_currency(update: Update, context: CallbackContext):
         context.user_data["bot_message"] = await query.message.reply_text("Please input new base currency.")
     
     else:
-        context.user_data["bot_message"] = await update.message.reply_text("Please input new base currency.")
+        context.user_data["bot_message"] = await update.effective_chat.send_message("Please input new base currency.")
 
     return CURRENCY_CONFIRMATION
         
@@ -104,7 +106,7 @@ async def find_currency(update: Update, context: CallbackContext):
 
             # If no expenses have been inputted or if there are no members.
             if not participants_balances:
-                await update.message.reply_text(
+                await update.effective_chat.send_message(
                 f"Base currency has been set to {new_currency}, but there are no balances to convert."
             )
                 connection.commit()
@@ -124,21 +126,21 @@ async def find_currency(update: Update, context: CallbackContext):
             connection.commit()
 
             # Send confirmation message
-            await update.message.reply_text(
+            await update.effective_chat.send_message(
                 f"Base currency has been set to {new_currency}. Current rate: 1 SGD = {new_rate} {new_currency}.\n\n"
                 f"All balances have been converted from {old_currency} to {new_currency}."
             )
 
         else:
-            await update.message.reply_text(
+            await update.effective_chat.send_message(
                 f"{new_currency} is not supported. Use /valid_currencies to see all supported currencies."
             )
 
     # Error handling
     except requests.exceptions.RequestException as e:
-        await update.message.reply_text(f"Failed to fetch currency rates: {e}")
+        await update.effective_chat.send_message(f"Failed to fetch currency rates: {e}")
     except Exception as e:
-        await update.message.reply_text(f"An error occurred: {e}")
+        await update.effective_chat.send_message(f"An error occurred: {e}")
 
     finally:
         if cursor:
@@ -150,7 +152,7 @@ async def find_currency(update: Update, context: CallbackContext):
     
 
 async def set_currency_cancel(update: Update, context: CallbackContext):
-    await update.message.reply_text("The action to set currency has been cancelled.")
+    await update.effective_chat.send_message("The action to set currency has been cancelled.")
     return ConversationHandler.END
 
 

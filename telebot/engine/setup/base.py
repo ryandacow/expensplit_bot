@@ -61,12 +61,13 @@ async def bot_start(update: Update, context: CallbackContext):
             "Then use Set Currency to set the base currency of the tracker.\n"
             "You may then proceed to Add Expense!\n\n"
             "You can also use /help to show a list of common commands.\n\n"
-            "DISCLAIMERS:\n"
-            "- Please give the bot up to one minute to respond as it takes time for the server to boot.\n\n"
+            "*DISCLAIMERS:*\n"
+            "*- Please give the bot up to one minute to respond as it takes time for the server to boot.*\n\n"
             "- Currently, the bot only supports up to one trip of inputs. If you would like to track expenses for a separate trip, please let RyanDaCow know so he can reset the data for you!\n\n"
             "- Certain higher-risk commands (like resetting of tracker) are only accessible by admins. Please let RyanDaCow know if you'd like admin rights!\n\n"
             "Enjoy using ExpenSplit! :D",
-            reply_markup=reply_markup
+            reply_markup=reply_markup,
+            parse_mode="Markdown"
         )
 
     except psycopg2.Error as e:

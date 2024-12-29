@@ -38,7 +38,7 @@ async def add_payer(update: Update, context: CallbackContext):
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     if not is_member(group_id, payer):
-        await update.effective_chat.send_message(f"{payer} is not a member in the group.\nPlease try again or use /cancel to end command before adding them in with /add_member")
+        context.user_data["bot_message"] = await update.effective_chat.send_message(f"{payer} is not a member in the group.\nPlease try again or use /cancel to end command before adding them in with /add_member")
         return PAYER
     
     context.user_data["payer"] = payer
@@ -56,15 +56,15 @@ async def add_amount(update:Update, context: CallbackContext):
     try:
         amount = float(amount)
         if amount <= 0:
-            await update.message.reply_text("Amount must be greater than 0. Please input a valid amount.")
+            await update.effective_chat.send_message("Amount must be greater than 0. Please input a valid amount.")
             return AMOUNT
     
         context.user_data["amount"] = amount
-        context.user_data["bot_message"] = await update.message.reply_text("Please input beneficiaries (comma-separated). Type all to include all members.")
+        context.user_data["bot_message"] = await update.effective_chat.send_message("Please input beneficiaries (comma-separated). Type all to include all members.")
         return BENEFICIARIES
     
     except ValueError:
-        context.user_data["bot_message"] = await update.message.reply_text("Invalid amount. Please input a valid amount.")
+        context.user_data["bot_message"] = await update.effective_chat.send_message("Invalid amount. Please input a valid amount.")
         return AMOUNT
     
 async def add_beneficiaries(update: Update, context: CallbackContext):
@@ -85,7 +85,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         SELECT username FROM participants WHERE group_id = %s;
         """, (group_id,))
         beneficiaries = [row[0] for row in cursor.fetchall()]
-        context.user_data["all_beneficiary_message"] = await update.message.reply_text("Amount will be split amongst all beneficiaries, including the payer.")
+        context.user_data["all_beneficiary_message"] = await update.effective_chat.send_message("Amount will be split amongst all beneficiaries, including the payer.")
 
     else:
         # Validate beneficiaries
@@ -97,7 +97,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         invalid_beneficiaries = [b for b in beneficiaries if b not in valid_users]
 
         if invalid_beneficiaries:
-                context.user_data["bot_message"] = await update.message.reply_text(f"Invalid beneficiaries: {', '.join(invalid_beneficiaries)}\nPlease try again.")
+                context.user_data["bot_message"] = await update.effective_chat.send_message(f"Invalid beneficiaries: {', '.join(invalid_beneficiaries)}\nPlease try again.")
                 return BENEFICIARIES
         
     context.user_data["beneficiaries"] = beneficiaries
@@ -107,7 +107,7 @@ async def add_beneficiaries(update: Update, context: CallbackContext):
         context.user_data["split_amounts"] = [context.user_data["amount"]]
         return await process_expense(update, context)
 
-    context.user_data["bot_message"] = await update.message.reply_text(
+    context.user_data["bot_message"] = await update.effective_chat.send_message(
         "Please input the amounts (comma-separated) each beneficiary will receive in the SAME order as shown:\n"
         f"Beneficiaries: {', '.join(beneficiaries)}\n\n"
         "Type 'equal' to distribute amounts equally."
@@ -141,18 +141,18 @@ async def add_split(update: Update, context: CallbackContext):
         split_amounts = [float(amount.strip()) for amount in split_text.split(",")]
 
         if len(split_amounts) != len(context.user_data["beneficiaries"]):
-            context.user_data["bot_message"] = await update.message.reply_text("Number of amounts does not match the number of beneficiaries. Please input again.")
+            context.user_data["bot_message"] = await update.effective_chat.send_message("Number of amounts does not match the number of beneficiaries. Please input again.")
             return SPLIT
 
         if sum(split_amounts) != context.user_data["amount"]:
-            context.user_data["bot_message"] = await update.message.reply_text("Sum of amounts does not match amount paid. Please input again.")
+            context.user_data["bot_message"] = await update.effective_chat.send_message("Sum of amounts does not match amount paid. Please input again.")
             return SPLIT
         
         context.user_data["split_amounts"] = split_amounts
         return await process_expense(update, context)
     
     except ValueError:
-        context.user_data["bot_message"] = await update.message.reply_text("Invalid amount inputted. Please enter valid numbers to be split.")
+        context.user_data["bot_message"] = await update.effective_chat.send_message("Invalid amount inputted. Please enter valid numbers to be split.")
         return SPLIT
 
 async def process_expense(update: Update, context: CallbackContext):
@@ -206,7 +206,7 @@ async def process_expense(update: Update, context: CallbackContext):
         beneficiaries_splits_text = ", ".join(
             [f"{beneficiary} ({currency}{split_amount})" for beneficiary, split_amount in zip(beneficiaries, split_amounts)]
         )
-        await update.message.reply_text(
+        await update.effective_chat.send_message(
             f"Expense recorded!\n"
             f"Purpose: {purpose}\n"
             f"Amount: {currency}{amount_paid:.2f}\n"
@@ -216,7 +216,7 @@ async def process_expense(update: Update, context: CallbackContext):
         )
 
     except Exception as e:
-        await update.message.reply_text(f"Error recording the expense: {e}")
+        await update.effective_chat.send_message(f"Error recording the expense: {e}")
     finally:
         cursor.close()
         connection.close()
@@ -225,7 +225,7 @@ async def process_expense(update: Update, context: CallbackContext):
 
 async def add_expense_cancel(update: Update, context: CallbackContext):
     """Cancel the add_expense conversation."""
-    await update.message.reply_text("Expense adding has been cancelled.")
+    await update.effective_chat.send_message("Expense adding has been cancelled.")
     return ConversationHandler.END
 
 

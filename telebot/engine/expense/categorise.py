@@ -10,7 +10,7 @@ CATEGORY, EXPENSE = range(2)
 
 #Creates a new category
 async def create_category(update: Update, context: CallbackContext):
-    context.user_data["bot_message"] = await update.message.reply_text("What is the name of the new category?")
+    context.user_data["bot_message"] = await update.effective_chat.send_message("What is the name of the new category?")
     return CATEGORY_CONFIRMATION
 
 async def name_category(update: Update, context: CallbackContext):
@@ -24,7 +24,7 @@ async def name_category(update: Update, context: CallbackContext):
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     if await is_category(group_id, category_name):
-        await update.message.reply_text("This category already exists.")
+        await update.effective_chat.send_message("This category already exists.")
         return ConversationHandler.END
 
     try:
@@ -49,12 +49,12 @@ async def name_category(update: Update, context: CallbackContext):
         if connection:
             connection.close()
 
-    await update.message.reply_text(f"{category_name} has been created.")
+    await update.effective_chat.send_message(f"{category_name} has been created.")
 
     return ConversationHandler.END
 
 async def create_category_cancel(update: Update, context: CallbackContext):
-    await update.message.reply_text("The action to create category has been cancelled.")
+    await update.effective_chat.send_message("The action to create category has been cancelled.")
     return ConversationHandler.END
 
 
@@ -63,7 +63,7 @@ async def create_category_cancel(update: Update, context: CallbackContext):
 
 #Adds an expense into a category
 async def update_category(update: Update, context: CallbackContext):
-    context.user_data["bot_message"] = await update.message.reply_text("Which category is to be updated?")
+    context.user_data["bot_message"] = await update.effective_chat.send_message("Which category is to be updated?")
     return CATEGORY
 
 async def expense_category(update: Update, context: CallbackContext):
@@ -77,11 +77,11 @@ async def expense_category(update: Update, context: CallbackContext):
     category_name = update.message.text
 
     if not await is_category(group_id, category_name):
-        await update.message.reply_text("No such category found. Please try again.")
+        await update.effective_chat.send_message("No such category found. Please try again.")
         return CATEGORY
 
     context.user_data["category"] = category_name
-    context.user_data["bot_message"] = await update.message.reply_text("Which expense is to be added?")
+    context.user_data["bot_message"] = await update.effective_chat.send_message("Which expense is to be added?")
     return EXPENSE
 
 async def expense_name(update: Update, context: CallbackContext):
@@ -102,7 +102,7 @@ async def expense_name(update: Update, context: CallbackContext):
     return await add_expense_into_category(update, context)
 
 async def add_expense_into_category(update: Update, context: CallbackContext):
-    bot_message = await update.message.reply_text("Updating category...")
+    bot_message = await update.effective_chat.send_message("Updating category...")
 
     # Retrieve necessary data from user_data
     group_id = update.message.chat_id
@@ -122,7 +122,7 @@ async def add_expense_into_category(update: Update, context: CallbackContext):
         """, (category_name, group_id, expense_name))
         connection.commit()
 
-        await update.message.reply_text(
+        await update.effective_chat.send_message(
             f"Expense '{expense_name}' has been successfully updated with the category '{category_name}'."
         )
 
@@ -130,7 +130,7 @@ async def add_expense_into_category(update: Update, context: CallbackContext):
             await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     
     except Exception as e:
-        await update.message.reply_text(f"An error occurred while updating the category: {e}")
+        await update.effective_chat.send_message(f"An error occurred while updating the category: {e}")
     finally:
         if connection:
             cursor.close()
@@ -139,5 +139,5 @@ async def add_expense_into_category(update: Update, context: CallbackContext):
     return ConversationHandler.END
 
 async def update_category_cancel(update: Update, context: CallbackContext):
-    await update.message.reply_text("The action to update category has been cancelled.")
+    await update.effective_chat.send_message("The action to update category has been cancelled.")
     return ConversationHandler.END

@@ -13,7 +13,7 @@ async def add_member(update: Update, context: CallbackContext):
         await query.answer()
         context.user_data["bot_message"] = await query.message.reply_text("Please input the new member's name:")
     else:
-        context.user_data["bot_message"] = await update.message.reply_text("Please input the new member's name.")
+        context.user_data["bot_message"] = await update.effective_chat.send_message("Please input the new member's name.")
     
     return MEMBER_CONFIRMATION
 
@@ -30,21 +30,21 @@ async def specify_member(update: Update, context: CallbackContext):
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     if is_member(group_id, new_member):
-        await update.message.reply_text(f"{new_member} is already in the group.")
+        await update.effective_chat.send_message(f"{new_member} is already in the group.")
         return ConversationHandler.END
 
     # Add the member from the database
     try:
         add_participant(group_id, new_member)
-        await update.message.reply_text(f"{new_member} has been added to the group by {user}.")
+        await update.effective_chat.send_message(f"{new_member} has been added to the group by {user}.")
 
     except Exception as e:
-        await update.message.reply_text(f"An error occurred while removing {new_member}: {str(e)}")
+        await update.effective_chat.send_message(f"An error occurred while removing {new_member}: {str(e)}")
 
     return ConversationHandler.END
 
 async def add_member_cancel(update: Update, context: CallbackContext):
-    await update.message.reply_text("The action to add member has been cancelled.")
+    await update.effective_chat.send_message("The action to add member has been cancelled.")
     return ConversationHandler.END
 
 async def remove_member(update: Update, context: CallbackContext):

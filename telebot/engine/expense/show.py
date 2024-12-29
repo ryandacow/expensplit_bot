@@ -233,7 +233,7 @@ async def spending_process(update: Update, context: CallbackContext):
             SELECT COALESCE(e.category_name, 'Others') AS category, SUM(eb.split_amount) AS total_spent
             FROM expense_beneficiaries eb
             JOIN expenses e ON eb.expense_id = e.id
-            WHERE eb.group_id = %s AND eb.username = %s AND e.category_name = %s
+            WHERE eb.group_id = %s AND eb.username = %s AND e.category_name ILIKE %s
             GROUP BY e.category_name;
             """, (group_id, member, input_category))
             spending_data = cursor.fetchone()
