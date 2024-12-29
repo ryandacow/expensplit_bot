@@ -176,9 +176,9 @@ async def init_application():
     #/remove_member command
     remove_member_conv_handler = ConversationHandler(
         entry_points=[
-            CommandHandler("remove_member", REMOVE_MEMBER_CONFIRMATION)],
+            CommandHandler("remove_member", remove_member_start)],
         states={
-            MEMBER_CONFIRMATION: [
+            REMOVE_MEMBER_CONFIRMATION: [
                 MessageHandler(filters.TEXT & ~filters.COMMAND, remove_member_specify),  # Only plain text (not commands)
             ],
         },
