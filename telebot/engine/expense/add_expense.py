@@ -25,6 +25,7 @@ async def add_purpose(update: Update, context: CallbackContext):
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     if update.message:
+        print("update.message available")
         context.user_data["bot_message"] = await update.message.reply_text("Who paid?")  # Works for private chats.
     else:
         context.user_data["bot_message"] = await update.effective_chat.send_message("Who paid?")  # Works for groups.
