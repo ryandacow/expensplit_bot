@@ -6,6 +6,7 @@ import logging
 
 REMOVE_CONFIRMATION = range(1)
 MEMBER_CONFIRMATION = range(1)
+REMOVE_MEMBER_CONFIRMATION = range(1)
 
 async def add_member(update: Update, context: CallbackContext):
     if update.callback_query:  # Inline button case
@@ -47,26 +48,42 @@ async def add_member_cancel(update: Update, context: CallbackContext):
     await update.effective_chat.send_message("The action to add member has been cancelled.")
     return ConversationHandler.END
 
-async def remove_member(update: Update, context: CallbackContext):
-    if len(context.args) < 1:
-        await update.message.reply_text("Usage: /remove_member <username>")
-        return
+
+
+async def remove_member_start(update: Update, context: CallbackContext):
+    context.user_data["bot_message"] = await update.effective_chat.send_message("Please input name of member to be removed.")
     
-    old_member = context.args[0]
-    group_id = update.message.chat_id
+    return REMOVE_MEMBER_CONFIRMATION
+    
+
+async def remove_member_specify(update: Update, context: CallbackContext):
     user = update.message.from_user.username
+    group_id = update.message.chat_id
+    old_member = update.message.text
+
+    #Auto delete message
+    bot_message = context.user_data.get("bot_message")
+    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     if not is_member(group_id, old_member):
-        await update.message.reply_text(f"{old_member} is not a member in the group.")
-        return
+        context.user_data["bot_message"] = await update.effective_chat.send_message(f"{old_member} is not a member in the group.\nPlease try again.")
+        return REMOVE_MEMBER_CONFIRMATION
 
     # Remove the member from the database
     try:
         remove_participant(group_id, old_member)
-        await update.message.reply_text(f"{old_member} has been removed from the group by {user}.")
+        await update.effective_chat.send_message(f"{old_member} has been removed from the group by {user}.")
 
     except Exception as e:
-        await update.message.reply_text(f"An error occurred while removing {old_member}: {str(e)}")
+        await update.effective_chat.send_message(f"An error occurred while removing {old_member}: {str(e)}")
+    
+    return ConversationHandler.END
+
+async def remove_member_cancel(update: Update, context: CallbackContext):
+    await update.effective_chat.send_message("The action to remove member has been cancelled.")
+    return ConversationHandler.END
+
 
 async def remove_all_start(update: Update, context: CallbackContext):
     group_id = update.message.chat_id

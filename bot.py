@@ -38,7 +38,10 @@ from telebot.engine.setup.members import(
     specify_member,
     add_member_cancel,
     MEMBER_CONFIRMATION,
-    remove_member, 
+    remove_member_start,
+    remove_member_specify,
+    remove_member_cancel,
+    REMOVE_MEMBER_CONFIRMATION, 
     show_members,
     remove_all_cancel,
     remove_all_start,
@@ -120,7 +123,6 @@ async def init_application():
     application.add_handler(CommandHandler("help", help))
     application.add_handler(CallbackQueryHandler(help, pattern="^help$"))
 
-    application.add_handler(CommandHandler("remove_member", remove_member))
     application.add_handler(CommandHandler("show_members", show_members))
 
     application.add_handler(CommandHandler("undo", undo))
@@ -170,6 +172,20 @@ async def init_application():
     ) 
 
     application.add_handler(add_member_conv_handler)
+
+    #/remove_member command
+    remove_member_conv_handler = ConversationHandler(
+        entry_points=[
+            CommandHandler("remove_member", REMOVE_MEMBER_CONFIRMATION)],
+        states={
+            MEMBER_CONFIRMATION: [
+                MessageHandler(filters.TEXT & ~filters.COMMAND, remove_member_specify),  # Only plain text (not commands)
+            ],
+        },
+        fallbacks=[CommandHandler("cancel", remove_member_cancel)],
+    ) 
+
+    application.add_handler(remove_member_conv_handler)
 
     #remove_all_members command
     remove_all_conv_handler = ConversationHandler(
