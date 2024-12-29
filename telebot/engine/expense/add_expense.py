@@ -13,7 +13,7 @@ async def add_expense(update: Update, context: CallbackContext):
         context.user_data["bot_message"] = await query.message.reply_text("What was the expense for?")
     
     else:
-        context.user_data["bot_message"] = await update.message.reply_text("What was the expense for?")
+        context.user_data["bot_message"] = await update.effective_chat.send_message("What was the expense for?")
     return PURPOSE
 
 async def add_purpose(update: Update, context: CallbackContext):
@@ -24,11 +24,7 @@ async def add_purpose(update: Update, context: CallbackContext):
     await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
-    if update.message:
-        print("update.message available")
-        context.user_data["bot_message"] = await update.message.reply_text("Who paid?")  # Works for private chats.
-    else:
-        context.user_data["bot_message"] = await update.effective_chat.send_message("Who paid?")  # Works for groups.
+    context.user_data["bot_message"] = await update.effective_chat.send_message("Who paid?")
     
     return PAYER
 
@@ -42,11 +38,11 @@ async def add_payer(update: Update, context: CallbackContext):
     await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
     if not is_member(group_id, payer):
-        context.user_data["bot_message"] = await update.message.reply_text(f"{payer} is not a member in the group.\nPlease try again or use /cancel to end command before adding them in with /add_member")
+        await update.effective_chat.send_message(f"{payer} is not a member in the group.\nPlease try again or use /cancel to end command before adding them in with /add_member")
         return PAYER
     
     context.user_data["payer"] = payer
-    context.user_data["bot_message"] = await update.message.reply_text("How much was the expense (in amount)?")
+    context.user_data["bot_message"] = await update.effective_chat.send_message("How much was the expense (in amount)?")
     return AMOUNT
 
 async def add_amount(update:Update, context: CallbackContext):
