@@ -69,13 +69,13 @@ async def find_currency(update: Update, context: CallbackContext):
         response = requests.get(API_URL)
         response.raise_for_status()  # Raise error for bad responses (e.g., 404 or 500)
         data = response.json()
+
+        connection = connect_to_base()
+        cursor = connection.cursor()
         
         # Check if the new currency is valid
         if new_currency in data['conversion_rates']:
             new_rate = data['conversion_rates'][new_currency]
-
-            connection = connect_to_base()
-            cursor = connection.cursor()
 
            # Retrieve old currency and old rate for balance conversion
             cursor.execute("""

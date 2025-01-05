@@ -88,6 +88,7 @@ async def help(update: Update, context: CallbackContext): #convert to inline but
         "Below are a list of common commands and how to use them!\n"
         "/start: Initialises the Bot. Activate once before utilising the bot\n\n"
         "/add_member: Adds a member to be tracked\n"
+        "/remove_member: Removes a member from being tracked\n"
         "/show_members: Shows all members being tracked\n\n"
         "/add_expense: Add an expense to be tracked\n"
         "/undo: Undoes the latest expense added\n"
