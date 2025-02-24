@@ -62,6 +62,7 @@ async def bot_start(update: Update, context: CallbackContext):
             "You may then proceed to Add Expense!\n\n"
             "You can also use /help to show a list of common commands.\n\n"
             "*DISCLAIMERS:*\n"
+            "*- PLEASE MAKE THE BOT ADMIN!*\n\n"
             "*- Please give the bot up to one minute to respond as it takes time for the server to boot.*\n\n"
             "- Currently, the bot only supports up to one trip of inputs. If you would like to track expenses for a separate trip, please let RyanDaCow know so he can reset the data for you!\n\n"
             "- Certain higher-risk commands (like resetting of tracker) are only accessible by admins. Please let RyanDaCow know if you'd like admin rights!\n\n"

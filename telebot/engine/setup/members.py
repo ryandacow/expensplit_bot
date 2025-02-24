@@ -27,8 +27,11 @@ async def specify_member(update: Update, context: CallbackContext):
 
     #Auto delete message
     bot_message = context.user_data.get("bot_message")
-    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
-    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+    try:
+        await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+        await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+    except Exception as e:
+        pass
 
     if is_member(group_id, new_member):
         await update.effective_chat.send_message(f"{new_member} is already in the group.")
@@ -63,8 +66,12 @@ async def remove_member_specify(update: Update, context: CallbackContext):
 
     #Auto delete message
     bot_message = context.user_data.get("bot_message")
-    await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
-    await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+    try:
+        await context.bot.deleteMessage(chat_id=bot_message.chat_id, message_id=bot_message.message_id)
+        await context.bot.deleteMessage(chat_id=update.message.chat_id, message_id=update.message.message_id)
+    
+    except Exception as e:
+        pass
 
     if not is_member(group_id, old_member):
         context.user_data["bot_message"] = await update.effective_chat.send_message(f"{old_member} is not a member in the group.\nPlease try again.")

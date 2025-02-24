@@ -231,7 +231,7 @@ async def delete_all_confirm(update: Update, context: CallbackContext):
             connection.commit()
             
             # Confirm the deletion to the user
-            await update.message.reply_text(f"All data for group {group_id} has been deleted and reset")
+            await update.effective_chat.send_message(f"All data for group {group_id} has been deleted and reset")
             
         except Exception as e:
             await update.message.reply_text(f"Error while deleting group data: {e}")
